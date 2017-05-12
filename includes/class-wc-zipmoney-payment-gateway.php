@@ -9,9 +9,9 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
     public $method_title = 'ZipMoney';
     public $method_description = 'ZipMoney Payments allows real-time credit to customers in a seamless and user friendly way.';
     public $title = 'Pay Later with zipPay';
-    public $description = 'No interest ever - get a decision in seconds!';
+    public $description = 'Interest Free Always!';
 
-    public $version = '1.0.0-rc2';
+    public $version = '1.0.0-rc3';
 
     public $supports = array('products', 'refunds');
 

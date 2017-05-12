@@ -1,3 +1,7 @@
+<div class="zip-overlay" onclick="this.style.display = 'none';">
+    <div class="zip-overlay-text">Creating charge, please wait...</div>
+</div>
+
 <script type="text/javascript">
     jQuery(function () {
 
@@ -65,8 +69,13 @@
                         console.log(response);
 
                         if (response.state == "approved" || response.state == "referred") {
+                            //show the redirect block
+                            jQuery('div.zip-overlay').css('display', 'block');
+
                             location.href = "<?php echo WC_Zipmoney_Payment_Gateway_Util::get_complete_endpoint_url();?>?result=" +
                                 response.state + "&checkoutId=" + response.checkoutId;
+
+                            //show the over lay
                         } else if((response.state == 'cancelled' || response.state == 'declined') && checkoutId){
                             //clear the wp_options
                             console.log('clear options. ' + checkoutId);
