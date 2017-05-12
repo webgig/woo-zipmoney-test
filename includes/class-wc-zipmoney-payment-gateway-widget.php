@@ -370,7 +370,7 @@ class WC_Zipmoney_Payment_Gateway_Widget
             return $description;
         }
 
-        return '<span zm-widget=\'inline\' zm-asset=\'checkoutdescription\'></span> <a  id="zipmoney-learn-more" class="zip-hover"  zm-widget="popup"  zm-popup-asset="termsdialog">Learn More</a>
+        return '<span zm-widget=\'inline\' zm-asset=\'checkoutdescription\'></span> <a  id="zipmoney-learn-more" class="zip-hover"  zm-widget="popup"  zm-popup-asset="checkoutdialog">Learn More</a>
     <script>if(window.$zmJs!==undefined) window.$zmJs._collectWidgetsEl(window.$zmJs);</script>';
     }
 
