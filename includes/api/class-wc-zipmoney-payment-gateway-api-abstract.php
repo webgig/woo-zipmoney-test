@@ -125,7 +125,7 @@ class WC_Zipmoney_Payment_Gateway_API_Abstract {
             'quantity' => $item_quantity,
             'type' => 'sku',
             'item_uri' => $product->get_permalink(),
-            'product_code' => strval($product->get_id())
+            'product_code' => strval($item['product_id'])
         );
 
         $attachment_ids = WC_Zipmoney_Payment_Gateway_Util::get_product_images_ids($product);

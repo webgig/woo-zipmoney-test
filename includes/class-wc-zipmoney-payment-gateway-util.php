@@ -337,8 +337,7 @@ class WC_Zipmoney_Payment_Gateway_Util
             'address_1',
             'city',
             'state',
-            'postcode',
-            'country'
+            'postcode'
         );
 
         //check billing address
@@ -454,6 +453,8 @@ class WC_Zipmoney_Payment_Gateway_Util
                     continue;
                 }
                 $zip_billing_details['zip_' . $billing_key] = $customer_details[$billing_key];
+            } else if ($address_key == 'country') {
+                $zip_billing_details['zip_' . $billing_key] = 'AU';
             } else {
                 $customer_details[$billing_key] = '';
             }
@@ -472,6 +473,8 @@ class WC_Zipmoney_Payment_Gateway_Util
                         continue;
                     }
                     $zip_shipping_details['zip_' . $shipping_key] = $customer_details[$billing_key];
+                } else if ($address_key == 'country') {
+                    $zip_shipping_details['zip_' . $billing_key] = 'AU';
                 } else {
                     $customer_details[$billing_key] = '';
                 }
@@ -486,6 +489,8 @@ class WC_Zipmoney_Payment_Gateway_Util
                         continue;
                     }
                     $zip_shipping_details['zip_' . $shipping_key] = $customer_details[$shipping_key];
+                } else if ($address_key == 'country') {
+                    $zip_shipping_details['zip_' . $shipping_key] = 'AU';
                 } else {
                     $customer_details[$shipping_key] = '';
                 }
