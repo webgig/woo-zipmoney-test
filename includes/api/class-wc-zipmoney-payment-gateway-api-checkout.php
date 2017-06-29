@@ -62,7 +62,7 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Checkout extends WC_Zipmoney_Payme
             WC_Zipmoney_Payment_Gateway_Util::log($exception->getCode() . $exception->getMessage());
             WC_Zipmoney_Payment_Gateway_Util::log($exception->getResponseBody());
 
-            wc_add_notice(__('Payment error:', 'woothemes') . $exception->getMessage(), 'error');
+            wc_add_notice(__('Payment error:', 'woothemes') . $exception->getMessage() . print_r($exception->getResponseBody(), true), 'error');
         } catch (Exception $exception) {
             WC_Zipmoney_Payment_Gateway_Util::log($exception->getCode() . $exception->getMessage());
             wc_add_notice(__('Payment error:', 'woothemes') . $exception->getMessage(), 'error');

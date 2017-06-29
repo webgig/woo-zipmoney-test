@@ -158,7 +158,7 @@ class WC_Zipmoney_Payment_Gateway_API_Abstract {
             $order_items[] = new OrderItem(
                 array(
                     'name' => 'Shipping cost',
-                    'amount' => floatval($shipping_amount),
+                    'amount' => round(floatval($shipping_amount), 2),
                     'quantity' => 1,
                     'type' => 'shipping'
                 )
