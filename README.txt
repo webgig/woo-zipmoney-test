@@ -13,6 +13,7 @@ zipMoney WooCommerce Plugin enables customer to checkout using zipMoney/zipPay a
 == Description ==
 
 Buy Now Pay Later.
+Testing
 
 zipMoney Payments allows realtime credit to customers in a seamless and user friendly way – all without the need to exchange any financial information, and leverage the power of promotional finance to increase sales for our business partners, risk free.
 
