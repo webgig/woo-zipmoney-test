@@ -104,7 +104,7 @@
     </target> 
 
     <target name="add_to_svn">
-        <exec command="cp --parents ./assets/**/* ./includes/*.php ./includes/zipmoney-api/ZipMoney.php ./includes/zipmoney-api/lib/*.php  ./includes/zipmoney-api/lib/**/*.php ./*.php ./README.txt ./LICENSE.txt ~/zipmoney-woocommerce-addon/trunk/" />
+        <exec command="cp -a ./assets/ ./includes/ ./*.php ./README.txt ./LICENSE.txt ~/zipmoney-woocommerce-addon/trunk/" />
         <exec command="cd ~/zipmoney-woocommerce-addon/  &amp;&amp;  svn stat" />
         <exec command="cd ~/zipmoney-woocommerce-addon/  &amp;&amp;  svn ci -m '${env.branch}'" />
         <exec command="cd ~/zipmoney-woocommerce-addon/  &amp;&amp;  svn cp trunk tags/${env.branch} " />

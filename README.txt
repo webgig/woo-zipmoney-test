@@ -72,7 +72,7 @@ To configure the plugin, go to __WooCommerce > Settings__ from the left hand me
 == Changelog ==
 
 = 2.0.0 =
-* Changes: - Uses the new zipMoney Merchant Api.
+* Changes: - Uses the new zipMoney Merchant Api. The plugin architecture has changed which introduces many breaking changes.
 
 = 1.2.2 =
 * Fixes:  - Missing Shipping addresss issue.
