@@ -241,10 +241,10 @@ class WC_Zipmoney_Payment_Gateway_Widget
         wp_register_style('wc-zipmoney-style', esc_url(plugins_url('assets/css/woocommerce-zipmoney-payment-front.css', dirname(__FILE__))));
         wp_enqueue_style('wc-zipmoney-style');
 
-        wp_register_script('wc-zipmoney-script', esc_url(plugins_url('assets/js/woocommerce-zipmoney-payment-front.js', dirname(__FILE__))), array('thickbox'), '1.0.0', true);
+        wp_register_script('wc-zipmoney-script', esc_url(plugins_url('assets/js/woocommerce-zipmoney-payment-front.js', dirname(__FILE__))), array('thickbox'), '2.0.0', true);
         wp_enqueue_script('wc-zipmoney-script');
 
-        wp_register_script('wc-zipmoney-widget-js', 'https://d3k1w8lx8mqizo.cloudfront.net/lib/js/zm-widget-js/dist/zipmoney-widgets-v1.min.js', array('jquery'), '1.0.5', true);
+        wp_register_script('wc-zipmoney-widget-js', 'https://d3k1w8lx8mqizo.cloudfront.net/lib/js/zm-widget-js/dist/zipmoney-widgets-v1.min.js', array('jquery'), '2.0.0', true);
         wp_enqueue_script('wc-zipmoney-widget-js');
 
         wp_register_script('wc-zipmoney-checkout-js', 'https://static.zipmoney.com.au/checkout/checkout-v1.js', array('jquery'));
