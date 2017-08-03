@@ -4,16 +4,16 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "c7b124ac9399537ea2a0420dc0cac142",
+    "content-hash": "6224447767765b407cb89bfc0851cba4",
     "packages": [],
     "packages-dev": [
         {
             "name": "zipMoney/zipMoney-MerchantApi-php",
-            "version": "dev-feature/api",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zipmoney/zipMoney-MerchantApi-php",
-                "reference": "feature/api"
+                "reference": "master"
             },
             "type": "library"
         }

@@ -38,6 +38,7 @@ jQuery('#woocommerce_zipmoney_display_widget').change(function () {
 
 }).change();
 
+/*
 jQuery('#woocommerce_zipmoney_is_express').change(function () {
 
     var banner_settings = jQuery('#woocommerce_zipmoney_is_express_product_page, #woocommerce_zipmoney_is_express_cart');
@@ -50,6 +51,7 @@ jQuery('#woocommerce_zipmoney_is_express').change(function () {
     }
 
 }).change();
+*/
 
 jQuery('#woocommerce_zipmoney_order_threshold_if_exceed').change(function () {
     var order_threshold_message = jQuery('#woocommerce_zipmoney_order_threshold_message').closest('tr');

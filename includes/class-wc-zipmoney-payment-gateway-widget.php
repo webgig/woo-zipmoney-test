@@ -31,7 +31,8 @@ class WC_Zipmoney_Payment_Gateway_Widget
         self::_add_tagline_hook($WC_Zipmoney_Payment_Gateway_Config);
 
         //Add the express button
-        self::_add_express_button_hook($WC_Zipmoney_Payment_Gateway_Config);
+        //TODO: Express checkout is not completed at this state
+//        self::_add_express_button_hook($WC_Zipmoney_Payment_Gateway_Config);
 
         //Init the widget scripts
         add_action('admin_enqueue_scripts', array($this, 'backend_scripts'));
@@ -45,7 +46,16 @@ class WC_Zipmoney_Payment_Gateway_Widget
 
         //add the payment gateway hook to order total
         add_filter( 'woocommerce_available_payment_gateways', array($this, 'process_available_payment_gateways_with_order_threshold'));
+
+        //add the notification section on checkout page
+        add_action('woocommerce_before_checkout_form', array($this, 'add_zip_notification_section_on_checkout'));
     }
+
+    public function add_zip_notification_section_on_checkout($wccm_autocreate_account)
+    {
+        include plugin_dir_path(dirname(__FILE__)) . 'includes/view/frontend/checkout_notification_section.php';
+    }
+
 
     public function process_available_payment_gateways_with_order_threshold($gateways)
     {
@@ -54,20 +64,10 @@ class WC_Zipmoney_Payment_Gateway_Widget
             return $gateways;
         }
 
-        WC_Zipmoney_Payment_Gateway_Util::log(WC()->cart->total);
-
-        if(WC()->cart->total >= $this->WC_Zipmoney_Payment_Gateway->get_option(WC_Zipmoney_Payment_Gateway_Config::CONFIG_ORDER_THRESHOLD_MIN_TOTAL) &&
-            WC()->cart->total <= $this->WC_Zipmoney_Payment_Gateway->get_option(WC_Zipmoney_Payment_Gateway_Config::CONFIG_ORDER_THRESHOLD_MAX_TOTAL)
+        if(WC()->cart->total < $this->WC_Zipmoney_Payment_Gateway->get_option(WC_Zipmoney_Payment_Gateway_Config::CONFIG_ORDER_THRESHOLD_MIN_TOTAL) &&
+            WC()->cart->total > $this->WC_Zipmoney_Payment_Gateway->get_option(WC_Zipmoney_Payment_Gateway_Config::CONFIG_ORDER_THRESHOLD_MAX_TOTAL)
         ){
-            //if the cart total hasn't exceeded the threshold, then we won't trigger anything
-            return $gateways;
-        }
-
-        //otherwise, we will do something by config
-        if ($this->WC_Zipmoney_Payment_Gateway->get_option(WC_Zipmoney_Payment_Gateway_Config::CONFIG_ORDER_THRESHOLD_IF_EXCEED) ==
-            WC_Zipmoney_Payment_Gateway_Config::ORDER_THRESHOLD_ACTION_HIDE
-        ) {
-            //hide the payment gateway
+            //if the cart total has exceeded the threshold, then we will hide the payment option
             unset($gateways[$this->WC_Zipmoney_Payment_Gateway->id]);
         }
 
@@ -99,38 +99,40 @@ class WC_Zipmoney_Payment_Gateway_Widget
     }
 
     /**
+     * TODO: Express checkout is disabled at this state. It will be implemented in the future
+     *
      * Add express button hook
      *
      * @param WC_Zipmoney_Payment_Gateway_Config $WC_Zipmoney_Payment_Gateway_Config
      */
-    private function _add_express_button_hook(WC_Zipmoney_Payment_Gateway_Config $WC_Zipmoney_Payment_Gateway_Config)
-    {
-        $config_is_express = $WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_IS_EXPRESS);
-        $config_display_widget = $WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_WIDGET);
-
-        //Express in Customise template
-        if ($config_is_express) {
-            add_action('zipmoney_wc_render_widget_general', array($this, 'render_express_payment_button'), 12);
-        } else if ($config_display_widget) {
-            add_action('zipmoney_wc_render_widget_general', array($this, 'render_widget_general'), 10);
-        }
-        //Express in product page
-        if ($config_is_express && $WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_IS_EXPRESS_PRODUCT_PAGE)) {
-            //Express checkout on product page
-            add_action('woocommerce_after_add_to_cart_button', array($this, 'render_express_payment_button'));
-        } else if ($config_display_widget && $WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_WIDGET_PRODUCT_PAGE)) {
-            //The widget on product page
-            add_action('woocommerce_after_add_to_cart_button', array($this, 'render_widget_product'));
-        }
-        //Express in cart page
-        if ($config_is_express && $WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_IS_EXPRESS_CART)) {
-            //Express checkout on cart page
-            add_action('woocommerce_after_add_to_cart_button', array($this, 'render_widget_product'));
-        } else if ($config_display_widget && $WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_WIDGET_CART)) {
-            //The widget on cart page
-            add_action('woocommerce_proceed_to_checkout', array($this, 'render_widget_cart'), 20);
-        }
-    }
+//    private function _add_express_button_hook(WC_Zipmoney_Payment_Gateway_Config $WC_Zipmoney_Payment_Gateway_Config)
+//    {
+//        $config_is_express = $WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_IS_EXPRESS);
+//        $config_display_widget = $WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_WIDGET);
+//
+//        //Express in Customise template
+//        if ($config_is_express) {
+//            add_action('zipmoney_wc_render_widget_general', array($this, 'render_express_payment_button'), 12);
+//        } else if ($config_display_widget) {
+//            add_action('zipmoney_wc_render_widget_general', array($this, 'render_widget_general'), 10);
+//        }
+//        //Express in product page
+//        if ($config_is_express && $WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_IS_EXPRESS_PRODUCT_PAGE)) {
+//            //Express checkout on product page
+//            add_action('woocommerce_after_add_to_cart_button', array($this, 'render_express_payment_button'));
+//        } else if ($config_display_widget && $WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_WIDGET_PRODUCT_PAGE)) {
+//            //The widget on product page
+//            add_action('woocommerce_after_add_to_cart_button', array($this, 'render_widget_product'));
+//        }
+//        //Express in cart page
+//        if ($config_is_express && $WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_IS_EXPRESS_CART)) {
+//            //Express checkout on cart page
+//            add_action('woocommerce_after_add_to_cart_button', array($this, 'render_widget_product'));
+//        } else if ($config_display_widget && $WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_WIDGET_CART)) {
+//            //The widget on cart page
+//            add_action('woocommerce_proceed_to_checkout', array($this, 'render_widget_cart'), 20);
+//        }
+//    }
 
 
     /**
@@ -337,21 +339,6 @@ class WC_Zipmoney_Payment_Gateway_Widget
 
         if (preg_match("/Learn More/", $description)){
             return $description;
-        }
-
-        if(WC()->cart->total < $this->WC_Zipmoney_Payment_Gateway->get_option(WC_Zipmoney_Payment_Gateway_Config::CONFIG_ORDER_THRESHOLD_MIN_TOTAL) ||
-            WC()->cart->total > $this->WC_Zipmoney_Payment_Gateway->get_option(WC_Zipmoney_Payment_Gateway_Config::CONFIG_ORDER_THRESHOLD_MAX_TOTAL)
-        ){
-            //get the format message
-            $message = $this->WC_Zipmoney_Payment_Gateway->get_option(WC_Zipmoney_Payment_Gateway_Config::CONFIG_ORDER_THRESHOLD_MESSAGE);
-
-            if(stripos($message, '%d') == false){
-                $description .= '<p class="warning">' . $message . '</p>';
-            } else {
-                $max_threshold = $this->WC_Zipmoney_Payment_Gateway->get_option(WC_Zipmoney_Payment_Gateway_Config::CONFIG_ORDER_THRESHOLD_MAX_TOTAL);
-                $description .= '<p class="warning">' . sprintf($message, $max_threshold) . '</p>';
-            }
-
         }
 
         return $description . ' <a  id="zipmoney-learn-more" class="zip-hover"  zm-widget="popup"  zm-popup-asset="termsdialog">Learn More</a>

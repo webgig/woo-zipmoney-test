@@ -1,4 +1,8 @@
 <?php
+use zipMoney\Model\ShopperStatistics;
+use zipMoney\Model\OrderItem;
+use zipMoney\Model\Address;
+
 
 class WC_Zipmoney_Payment_Gateway_API_Abstract {
     protected $WC_Zipmoney_Payment_Gateway;
@@ -94,7 +98,7 @@ class WC_Zipmoney_Payment_Gateway_API_Abstract {
             $data['last_login'] = $last_login;
         }
 
-        return new \zipMoney\Model\ShopperStatistics($data);
+        return new ShopperStatistics($data);
     }
 
     /**
@@ -128,13 +132,13 @@ class WC_Zipmoney_Payment_Gateway_API_Abstract {
                 $order_item_data['image_uri'] = wp_get_attachment_url($attachment_ids[0]);
             }
 
-            $order_items[] = new \zipMoney\Model\OrderItem($order_item_data);
+            $order_items[] = new OrderItem($order_item_data);
         }
 
         //get the shipping cost
         $shipping_amount = $WC_Session->get('shipping_total', 0) + $WC_Session->get('shipping_tax_total', 0);
         if ($shipping_amount > 0) {
-            $order_items[] = new \zipMoney\Model\OrderItem(
+            $order_items[] = new OrderItem(
                 array(
                     'name' => 'Shipping cost',
                     'amount' => floatval($shipping_amount),
@@ -147,7 +151,7 @@ class WC_Zipmoney_Payment_Gateway_API_Abstract {
         //get the discount
         $discount_amount = $WC_Session->get('discount_cart', 0) + $WC_Session->get('discount_cart_tax', 0);
         if ($discount_amount > 0) {
-            $order_items[] = new \zipMoney\Model\OrderItem(
+            $order_items[] = new OrderItem(
                 array(
                     'name' => 'Discount',
                     'amount' => floatval($discount_amount) * -1,
@@ -178,7 +182,7 @@ class WC_Zipmoney_Payment_Gateway_API_Abstract {
      */
     protected function _create_billing_address(array $billing_array)
     {
-        return new \zipMoney\Model\Address(
+        return new Address(
             array(
                 'line1' => $billing_array['zip_billing_address_1'],
                 'line2' => $billing_array['zip_billing_address_2'],
@@ -200,7 +204,7 @@ class WC_Zipmoney_Payment_Gateway_API_Abstract {
      */
     protected function _create_shipping_address(array $shipping_array)
     {
-        return new \zipMoney\Model\Address(
+        return new Address(
             array(
                 'line1' => $shipping_array['zip_shipping_address_1'],
                 'line2' => $shipping_array['zip_shipping_address_2'],

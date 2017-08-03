@@ -20,6 +20,7 @@ class WC_Zipmoney_Payment_Gateway_Config
 
     const META_CHECKOUT_ID = '_zipmoney_checkout_id';
     const META_CHARGE_ID = '_zipmoney_charge_id';
+    const META_USER_ID = 'user_id';
 
     //Admin setting key
     const CONFIG_ENABLED = 'enabled';
@@ -30,9 +31,9 @@ class WC_Zipmoney_Payment_Gateway_Config
     const CONFIG_MERCHANT_PRIVATE_KEY = 'merchant_private_key';
     const CONFIG_CHARGE_CAPTURE = 'charge_capture';
     const CONFIG_LOGGING_LEVEL = 'log_level';
-    const CONFIG_IS_EXPRESS = 'is_express';
-    const CONFIG_IS_EXPRESS_PRODUCT_PAGE = 'is_express_product_page';
-    const CONFIG_IS_EXPRESS_CART = 'is_express_cart';
+//    const CONFIG_IS_EXPRESS = 'is_express';
+//    const CONFIG_IS_EXPRESS_PRODUCT_PAGE = 'is_express_product_page';
+//    const CONFIG_IS_EXPRESS_CART = 'is_express_cart';
     const CONFIG_IS_IFRAME_FLOW = 'is_iframe_flow';
     const CONFIG_DISPLAY_WIDGET = 'display_widget';
     const CONFIG_DISPLAY_WIDGET_PRODUCT_PAGE = 'display_widget_product_page';
@@ -46,12 +47,10 @@ class WC_Zipmoney_Payment_Gateway_Config
     const CONFIG_DISPLAY_TAGLINE_CART = 'display_tagline_cart';
     const CONFIG_ORDER_THRESHOLD_MIN_TOTAL = 'order_threshold_min_total';
     const CONFIG_ORDER_THRESHOLD_MAX_TOTAL = 'order_threshold_max_total';
-    const CONFIG_ORDER_THRESHOLD_IF_EXCEED = 'order_threshold_if_exceed';
-    const CONFIG_ORDER_THRESHOLD_MESSAGE = 'order_threshold_message';
 
-    //order threshold if exceed
-    const ORDER_THRESHOLD_ACTION_DISPLAY_NOTICE = 'order_threshold_display_notice';
-    const ORDER_THRESHOLD_ACTION_HIDE = 'order_threshold_hide';
+    // capture charge options
+    const CAPTURE_CHARGE_IMMEDIATELY = 'immediately';
+    const CAPTURE_CHARGE_AUTHORIZED = 'authorized';
 
     const SINGLE_CONFIG_API_KEY = '_api_hash';
     const SINGLE_CONFIG_API_SETTINGS = '_api_settings';
@@ -126,11 +125,14 @@ class WC_Zipmoney_Payment_Gateway_Config
                 'default' => '',
             ),
             self::CONFIG_CHARGE_CAPTURE => array(
-                'title' => __('Charge Capture', 'woocommerce'),
-                'label' => 'Immediately after checkout',
-                'type' => 'checkbox',
-                'desc_tip' => __('If it is checked, this will be a direct capture. Un-check it to perform an authorisation only.', 'woocommerce'),
-                'default' => 'yes'
+                'title' => __('Charge Capture option', 'woocommerce'),
+                'type' => 'select',
+                'description' => __('Select how to capture the zip charge. Direct capture(Immediately) or authorized(Put payment status to authorized and charge later)', 'woocommerce'),
+                'default' => self::CAPTURE_CHARGE_IMMEDIATELY,
+                'options' => array(
+                    self::CAPTURE_CHARGE_IMMEDIATELY => 'Capture immediately',
+                    self::CAPTURE_CHARGE_AUTHORIZED => 'Put payment status to authorized and capture later'
+                )
             ),
             self::CONFIG_LOGGING_LEVEL => array(
                 'title' => __('Log Message level', 'woocommerce'),
@@ -146,23 +148,6 @@ class WC_Zipmoney_Payment_Gateway_Config
                     self::LOG_LEVEL_FATAL => 'Fatal (and above)',
                     self::LOG_LEVEL_OFF => 'Off (No message will be logged)'
                 )
-            ),
-            self::CONFIG_IS_EXPRESS => array(
-                'title' => __('Express Checkout', 'woocommerce'),
-                'label' => __('Enable express checkout.', 'woocommerce'),
-                'type' => 'checkbox',
-                'desc_tip' => __('Enables express checkout on product & cart page.', 'woocommerce'),
-                'default' => 'no'
-            ),
-            self::CONFIG_IS_EXPRESS_PRODUCT_PAGE => array(
-                'label' => __('Enable express checkout on product page.', 'woocommerce'),
-                'type' => 'checkbox',
-                'default' => 'no'
-            ),
-            self::CONFIG_IS_EXPRESS_CART => array(
-                'label' => __('Enable express checkout on cart.', 'woocommerce'),
-                'type' => 'checkbox',
-                'default' => 'no'
             ),
             self::CONFIG_IS_IFRAME_FLOW => array(
                 'title' => __('Iframe Checkout', 'woocommerce'),
@@ -182,22 +167,6 @@ class WC_Zipmoney_Payment_Gateway_Config
                 'type' => 'text',
                 'desc_tip' => 'The maximum order price value',
                 'default' => 1000
-            ),
-            self::CONFIG_ORDER_THRESHOLD_IF_EXCEED => array(
-                'title' => __('When order total is outside the threshold', 'woocommerce'),
-                'desc_tip' => 'The action to take when the order total is outside the threshold',
-                'type' => 'select',
-                'default' => self::ORDER_THRESHOLD_ACTION_HIDE,
-                'options' => array(
-                    self::ORDER_THRESHOLD_ACTION_DISPLAY_NOTICE => 'Display Notice',
-                    self::ORDER_THRESHOLD_ACTION_HIDE => 'Hide'
-                )
-            ),
-            self::CONFIG_ORDER_THRESHOLD_MESSAGE => array(
-                'title' => __('Order Total Threshold Message', 'woocommerce'),
-                'type' => 'textarea',
-                'desc_tip' => 'The message which will be shown as alert message to customer',
-                'default' => 'Available on orders up to $%d. Don\'t worry if its a little higher, you can always pay a deposit.'
             ),
             self::CONFIG_DISPLAY_WIDGET => array(
                 'title' => __('Marketing Widgets', 'woocommerce'),

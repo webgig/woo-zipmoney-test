@@ -1,7 +1,7 @@
 {
   "name": "zipmoney/woocommerce-zipmoneypayment-apiv2",
   "require-dev": {
-    "zipMoney/zipMoney-MerchantApi-php": "dev-feature/api"
+    "zipMoney/zipMoney-MerchantApi-php": "dev-master"
   },
   "minimum-stability": "dev",
   "autoload": {
@@ -31,11 +31,11 @@
       "type":"package",
       "package": {
         "name": "zipMoney/zipMoney-MerchantApi-php",
-        "version": "dev-feature/api",
+        "version": "dev-master",
         "source": {
           "url": "https://github.com/zipmoney/zipMoney-MerchantApi-php",
           "type": "git",
-          "reference": "feature/api"
+          "reference": "master"
         }
       }
     }

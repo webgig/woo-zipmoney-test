@@ -8,7 +8,6 @@ get_header();
                 <header class="page-header">
                     <h1 class="page-title"><?php echo $title; ?></h1>
                 </header>
-
                 <div class="page-wrapper">
                     <div class="page-content">
                         <p><?php echo $content; ?></p>

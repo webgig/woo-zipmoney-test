@@ -1,4 +1,11 @@
 <?php
+use zipMoney\Api\CheckoutsApi;
+use zipMoney\Model\CheckoutConfiguration;
+use zipMoney\Model\CreateCheckoutRequest;
+use zipMoney\Model\Shopper;
+use zipMoney\Model\OrderShipping;
+use zipMoney\Model\CheckoutOrder;
+use zipMoney\ApiException;
 
 class WC_Zipmoney_Payment_Gateway_API_Request_Checkout extends WC_Zipmoney_Payment_Gateway_API_Abstract
 {
@@ -20,7 +27,7 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Checkout extends WC_Zipmoney_Payme
         WC_Zipmoney_Payment_Gateway_Util::log('Sending checkout request to API', WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_INFO);
         WC_Zipmoney_Payment_Gateway_Util::log($body, WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG);
 
-        $api_instance = new \zipMoney\Client\Api\CheckoutsApi();
+        $api_instance = new CheckoutsApi();
 
         try {
             $checkout = $api_instance->checkoutsCreate($body);
@@ -32,6 +39,11 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Checkout extends WC_Zipmoney_Payme
             //add meta data to session
             $WC_Session->set(WC_Zipmoney_Payment_Gateway_Config::META_CHECKOUT_ID, $checkout->getId());
 
+            //set user id if there is any
+            if(is_user_logged_in()){
+                $WC_Session->set(WC_Zipmoney_Payment_Gateway_Config::META_USER_ID, get_current_user_id());
+            }
+
             //save the checkout and session into option table
             if(version_compare(WC()->version, '4.2.0', '>=')){
                 update_option($checkout->getId(), $WC_Session, false);
@@ -41,7 +53,7 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Checkout extends WC_Zipmoney_Payme
 
             return $checkout;
 
-        } catch (\zipMoney\ApiException $exception) {
+        } catch (ApiException $exception) {
             WC_Zipmoney_Payment_Gateway_Util::log($exception->getCode() . $exception->getMessage());
             WC_Zipmoney_Payment_Gateway_Util::log($exception->getResponseBody());
 
@@ -71,13 +83,13 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Checkout extends WC_Zipmoney_Payme
         $checkout_order = self::_create_checkout_order($WC_Session);
 
         //get the config
-        $checkout_configuration = new \zipMoney\Model\CheckoutConfiguration(
+        $checkout_configuration = new CheckoutConfiguration(
             array(
                 'redirect_uri' => $redirect_url
             )
         );
 
-        return new \zipMoney\Model\CreateCheckoutRequest(
+        return new CreateCheckoutRequest(
             array(
                 'shopper' => $shopper,
                 'order' => $checkout_order,
@@ -111,7 +123,7 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Checkout extends WC_Zipmoney_Payme
             $data['statistics'] = $shopper_statistics;
         }
 
-        return new \zipMoney\Model\Shopper($data);
+        return new Shopper($data);
     }
 
 
@@ -124,14 +136,18 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Checkout extends WC_Zipmoney_Payme
      */
     private function _create_checkout_order(WC_Session $WC_Session)
     {
-        $order_shipping = new \zipMoney\Model\OrderShipping(
+        $chosen_shipping_rates = $WC_Session->get('chosen_shipping_methods');
+        $is_pickup = in_array('local_pickup', $chosen_shipping_rates);
+
+        $order_shipping = new OrderShipping(
             array(
-                'address' => self::_create_shipping_address($WC_Session->get('zip_shipping_details'))
+                'address' => self::_create_shipping_address($WC_Session->get('zip_shipping_details')),
+                'pickup' => $is_pickup
             )
         );
 
         //Create the checkout order
-        $checkout_order = new \zipMoney\Model\CheckoutOrder(
+        $checkout_order = new CheckoutOrder(
             array(
                 'amount' => $WC_Session->get('total'),
                 'currency' => get_woocommerce_currency(),

@@ -181,7 +181,11 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
                 //create the checkout object
                 $checkout_controller = new WC_Zip_Controller_Checkout_Controller($this);
                 $response = $checkout_controller->create_checkout();
-                wp_send_json($response);
+                if ($response['success'] == true) {
+                    wp_send_json($response);
+                } else {
+                    wp_send_json($response, 500);
+                }
                 break;
             case 'charge':
                 if(isset($query_vars['data']) == false){

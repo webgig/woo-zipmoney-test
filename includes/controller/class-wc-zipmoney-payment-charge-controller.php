@@ -13,33 +13,52 @@ class WC_Zip_Controller_Charge_Controller extends WC_Zip_Controller_Abstract_Con
      */
     public function create_charge($options)
     {
-        //get session from option table by checkout id
-        $WC_Session = get_option($options['checkoutId'], false);
-
         $result = array('result' => false);
 
-        if (empty($WC_Session)) {
-            WC_Zipmoney_Payment_Gateway_Util::log('Empty session record with checkoutId: ' . $options['checkoutId'], WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG);
+        //validate the $options
+        if(isset($options['result']) == false || isset($options['checkoutId']) == false){
+            $result['title'] = 'Invalid request';
+            $result['content'] = 'There are some parameters missing in the request url.';
             return $result;
         }
 
-        WC_Zipmoney_Payment_Gateway_Util::log(sprintf('CheckoutId: %s, Result: %s', $options['checkoutId'], $options['result']), WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG);
+        WC_Zipmoney_Payment_Gateway_Util::log(
+            sprintf('CheckoutId: %s, Result: %s', $options['checkoutId'], $options['result']),
+            WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG
+        );
 
         switch ($options['result']){
             case 'approved':
+                //get session from option table by checkout id
+                $WC_Session = get_option($options['checkoutId'], false);
+
+                if (empty($WC_Session)) {
+                    WC_Zipmoney_Payment_Gateway_Util::log(
+                        'Empty session record with checkoutId: ' . $options['checkoutId'],
+                        WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG
+                    );
+
+                    $result['title'] = 'Unable to get order with checkout id: ' . $options['checkoutId'];
+                    $result['content'] = '';
+
+                    return $result;
+                }
+
                 //if it is approved, then we will create a charge
                 $WC_Zipmoney_Payment_Gateway_API_Request_Charge = new WC_Zipmoney_Payment_Gateway_API_Request_Charge($this->WC_Zipmoney_Payment_Gateway);
 
-                $order = $WC_Zipmoney_Payment_Gateway_API_Request_Charge->create_charge(
+                $response = $WC_Zipmoney_Payment_Gateway_API_Request_Charge->create_charge(
                     $WC_Session,
                     $this->WC_Zipmoney_Payment_Gateway_Config->get_merchant_public_key(),
                     $options
                 );
 
-                WC_Zipmoney_Payment_Gateway_Util::log($order, WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG);
+                WC_Zipmoney_Payment_Gateway_Util::log(json_encode($response), WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG);
 
-                $result['result'] = true;
-                $result['order'] = $order;
+                $result['result'] = $response['success'];
+                $result['order'] = $response['order'];
+                $result['title'] = $response['success']?'Success': 'Error';
+                $result['content'] = $response['message'];
                 break;
             case 'referred':
                 $result['title'] = 'The payment is in referred state';

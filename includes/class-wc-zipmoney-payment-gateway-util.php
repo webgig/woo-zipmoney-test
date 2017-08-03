@@ -1,4 +1,7 @@
 <?php
+use zipMoney\ApiException;
+
+
 class WC_Zipmoney_Payment_Gateway_Util
 {
     private static $logger = null;
@@ -174,12 +177,68 @@ class WC_Zipmoney_Payment_Gateway_Util
         include plugin_dir_path(dirname(__FILE__)) . 'includes/view/frontend/error_page.php';
     }
 
+    public static function handle_capture_charge_api_exception(ApiException $exception, WC_Order $order)
+    {
+        $error_codes_map = array(
+            'amount_invalid' => 'Capture amount does not match authorised amount',
+            'invalid_state' => 'The charge is not in authorised state'
+        );
+
+        self::log($exception->getCode() . $exception->getMessage());
+        self::log($exception->getResponseBody());
+
+        $error_code = $exception->getResponseObject()->getError()->getCode();
+
+        if(!empty($error_codes_map[$error_code])){
+            $order->add_order_note($error_codes_map[$error_code]);
+            self::add_admin_notice($error_codes_map[$error_code]);
+        } else {
+            self::add_admin_notice($exception->getMessage());
+            self::add_admin_notice(print_r($exception->getResponseBody(), true));
+        }
+    }
+
+    /**
+     * Handle the charge create api exception
+     *
+     * @param ApiException $exception
+     * @return array
+     */
+    public static function handle_create_charge_api_exception(ApiException $exception)
+    {
+        $error_codes_map = array(
+            "account_insufficient_funds" => "WC-0001",
+            "account_inoperative" => "WC-0002",
+            "account_locked" => "WC-0003",
+            "amount_invalid" => "WC-0004",
+            "fraud_check" => "WC-0005"
+        );
+
+        self::log($exception->getCode() . $exception->getMessage());
+        self::log($exception->getResponseBody());
+
+        $response = array(
+            'success' => false,
+            'code' => $exception->getCode()
+        );
+
+        $error_code = $exception->getResponseObject()->getError()->getCode();
+
+        if($exception->getCode() == 402 && !empty($error_codes_map[$error_code])){
+            $response['message'] = sprintf('The payment was declined by Zip.(%s)', $error_codes_map[$error_code]);
+        } else {
+            $response['message'] = $exception->getMessage();
+        }
+
+        return $response;
+    }
+
+
     /**
      * Show the notification page
      *
      * @param $title
-     * @param $content_title
-     * @param $content_details
+     * @param $content
      */
     public static function show_notification_page($title, $content)
     {
