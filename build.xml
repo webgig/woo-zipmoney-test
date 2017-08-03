@@ -7,11 +7,12 @@
     <property name="wp.lib_dir" value="${tmp-dir}/wordpress-tests-lib" />
     <property name="extension.base_dir" value="${project.basedir}" />
     <property name="vendor-dir" value="${project.basedir}/vendor/"/>
+    <property name="global.vendor.dir" value="~/.composer/vendor/"/>
 
     <property name="bin.composer"   value="${vendor-dir}bin/composer --working-dir=${project.basedir}"/>
     <property name="bin.wp"         value="${vendor-dir}bin/wp" />
     <property name="bin.wc-setup"   value="${vendor-dir}webgig/wc-setup/bin/wc-setup" />
-    <property name="bin.phpunit"    value="${vendor-dir}bin/phpunit" />
+    <property name="bin.phpunit"  value="${global.vendor.dir}bin/phpunit" />
     <property environment="env"/>
 
 
