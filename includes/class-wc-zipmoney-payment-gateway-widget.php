@@ -360,7 +360,7 @@ class WC_Zipmoney_Payment_Gateway_Widget
      */
     public function render_root_el()
     {
-        echo '<div data-zm-merchant="'.$this->WC_Zipmoney_Payment_Gateway->WC_Zipmoney_Payment_Gateway_Config->get_merchant_private_key().'" data-env="' .
+        echo '<div data-zm-merchant="'.$this->WC_Zipmoney_Payment_Gateway->WC_Zipmoney_Payment_Gateway_Config->get_merchant_public_key().'" data-env="' .
             $this->WC_Zipmoney_Payment_Gateway->WC_Zipmoney_Payment_Gateway_Config->get_environment() . '"></div> ';
     }
 

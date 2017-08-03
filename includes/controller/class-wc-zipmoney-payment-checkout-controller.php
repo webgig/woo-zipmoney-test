@@ -20,7 +20,7 @@ class WC_Zip_Controller_Checkout_Controller extends WC_Zip_Controller_Abstract_C
         $checkout_response = $WC_Zipmoney_Payment_Gateway_API_Request_Checkout->create_checkout(
             WC()->session,
             WC_Zipmoney_Payment_Gateway_Util::get_complete_endpoint_url(),
-            $this->WC_Zipmoney_Payment_Gateway_Config->get_merchant_public_key()
+            $this->WC_Zipmoney_Payment_Gateway_Config->get_merchant_private_key()
         );
 
         if (empty($checkout_response)) {

@@ -225,7 +225,7 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
 
         return $WC_Zipmoney_Payment_Gateway_API_Request_Charge->refund_order_charge(
             $order,
-            $this->WC_Zipmoney_Payment_Gateway_Config->get_merchant_public_key(),
+            $this->WC_Zipmoney_Payment_Gateway_Config->get_merchant_private_key(),
             $amount,
             $reason
         );
