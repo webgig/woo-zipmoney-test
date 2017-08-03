@@ -46,7 +46,6 @@ class WC_Zipmoney_Payment_Gateway_Config
     const CONFIG_DISPLAY_TAGLINE_PRODUCT_PAGE = 'display_tagline_product_page';
     const CONFIG_DISPLAY_TAGLINE_CART = 'display_tagline_cart';
     const CONFIG_ORDER_THRESHOLD_MIN_TOTAL = 'order_threshold_min_total';
-    const CONFIG_ORDER_THRESHOLD_MAX_TOTAL = 'order_threshold_max_total';
 
     // capture charge options
     const CAPTURE_CHARGE_IMMEDIATELY = 'immediately';
@@ -161,12 +160,6 @@ class WC_Zipmoney_Payment_Gateway_Config
                 'type' => 'text',
                 'desc_tip' => 'The minimum order price value',
                 'default' => 1
-            ),
-            self::CONFIG_ORDER_THRESHOLD_MAX_TOTAL => array(
-                'title' => __('Maximum Order Total', 'woocommerce'),
-                'type' => 'text',
-                'desc_tip' => 'The maximum order price value',
-                'default' => 1000
             ),
             self::CONFIG_DISPLAY_WIDGET => array(
                 'title' => __('Marketing Widgets', 'woocommerce'),

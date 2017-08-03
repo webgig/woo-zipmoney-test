@@ -67,9 +67,7 @@ class WC_Zipmoney_Payment_Gateway_Widget
             return $gateways;
         }
 
-        if(WC()->cart->total < $this->WC_Zipmoney_Payment_Gateway->get_option(WC_Zipmoney_Payment_Gateway_Config::CONFIG_ORDER_THRESHOLD_MIN_TOTAL) &&
-            WC()->cart->total > $this->WC_Zipmoney_Payment_Gateway->get_option(WC_Zipmoney_Payment_Gateway_Config::CONFIG_ORDER_THRESHOLD_MAX_TOTAL)
-        ){
+        if(WC()->cart->total < $this->WC_Zipmoney_Payment_Gateway->get_option(WC_Zipmoney_Payment_Gateway_Config::CONFIG_ORDER_THRESHOLD_MIN_TOTAL)){
             //if the cart total has exceeded the threshold, then we will hide the payment option
             unset($gateways[$this->WC_Zipmoney_Payment_Gateway->id]);
         }
