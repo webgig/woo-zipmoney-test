@@ -5,9 +5,11 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
     //essential settings
     public $id = 'zipmoney';
     public $icon = '';
-    public $has_fields = false;
+    public $has_fields = true;
     public $method_title = 'ZipMoney';
     public $method_description = 'ZipMoney Payments allows real-time credit to customers in a seamless and user friendly way.';
+    public $title = 'Pay Later with zipPay';
+    public $description = 'No interest ever - get a decision in seconds!';
 
     public $form_fields;
 
@@ -94,5 +96,9 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
         self::_init_hooks();
     }
 
+    public function process_payment($order_id)
+    {
+        return parent::process_payment($order_id);
+    }
 
 }

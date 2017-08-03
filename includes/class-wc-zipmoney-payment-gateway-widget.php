@@ -14,6 +14,8 @@ class WC_Zipmoney_Payment_Gateway_Widget
         add_action('woocommerce_before_cart', array($this, 'render_root_el'));
         add_action('woocommerce_before_checkout_form', array($this, 'render_root_el'));
 
+        add_filter('woocommerce_gateway_description', array($this, 'updateMethodDescription'), 10, 2);
+
         $WC_Zipmoney_Payment_Gateway_Config = $this->WC_Zipmoney_Payment_Gateway->WC_Zipmoney_Payment_Gateway_Config;
 
         //Banners
@@ -216,5 +218,28 @@ class WC_Zipmoney_Payment_Gateway_Widget
     {
         echo '<div data-zm-merchant="'.$this->WC_Zipmoney_Payment_Gateway->WC_Zipmoney_Payment_Gateway_Config->get_merchant_public_key().'" data-env="' .
             $this->WC_Zipmoney_Payment_Gateway->WC_Zipmoney_Payment_Gateway_Config->get_environment() . '"></div> ';
+    }
+
+    /**
+     * Updated the method description text to include the Learn More link.
+     *
+     * @access public
+     * @param string $description , string $id
+     * @return string $description
+     */
+    public function updateMethodDescription($description, $id)
+    {
+        if ($id != $this->WC_Zipmoney_Payment_Gateway->id){
+            return $description;
+        }
+
+        if (preg_match("/Learn More/", $description)){
+            return $description;
+        }
+
+        $html = null;
+
+        return $description . ' <a  id="zipmoney-learn-more" class="zip-hover"  zm-widget="popup"  zm-popup-asset="termsdialog">Learn More</a>
+    <script>if(window.$zmJs!==undefined) window.$zmJs._collectWidgetsEl(window.$zmJs);</script>';
     }
 }
