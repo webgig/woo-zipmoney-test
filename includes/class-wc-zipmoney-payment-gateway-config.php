@@ -5,11 +5,18 @@ class WC_Zipmoney_Payment_Gateway_Config
     const PLATFORM = 'Woocommerce';
     const CLIENT = 'WooCommerce ZipMoney Payment API';
 
+    const POST_TYPE_QUOTE = 'shop_quote';
+    const POST_TYPE_ORDER = 'shop_order';
+
     const LOGO_SOURCE_URL = "http://d3k1w8lx8mqizo.cloudfront.net/logo/25px/";
 
     const IFRAME_API_URL_PRODUCTION = 'https://account.zipmoney.com.au/scripts/iframe/zipmoney-checkout.js';
     const IFRAME_API_URL_SANDBOX = 'https://account.sandbox.zipmoney.com.au/scripts/iframe/zipmoney-checkout.js';
 
+    const META_CHECKOUT_ID = '_zipmoney_checkout_id';
+    const META_CHARGE_ID = '_zipmoney_charge_id';
+
+    //Admin setting key
     const CONFIG_ENABLED = 'enabled';
     const CONFIG_SANDBOX = 'sandbox';
     const CONFIG_SANDBOX_MERCHANT_PUBLIC_KEY = 'sandbox_merchant_public_key';
@@ -35,6 +42,7 @@ class WC_Zipmoney_Payment_Gateway_Config
     const SINGLE_CONFIG_API_KEY = '_api_hash';
     const SINGLE_CONFIG_API_SETTINGS = '_api_settings';
 
+    //Log levels
     const LOG_LEVEL_ALL = 1;
     const LOG_LEVEL_DEBUG = 2;
     const LOG_LEVEL_INFO = 3;
