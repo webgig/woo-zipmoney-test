@@ -115,7 +115,7 @@ class WC_Zipmoney_Payment_Gateway_API_Abstract {
 
         $item_quantity = intval($item['quantity']);
 
-        $description = empty($product->post->post_excerpt)? '':$product->post->post_excerpt;
+        $description = WC_Zipmoney_Payment_Gateway_Util::get_product_description($product);
 
         $order_item_data = array(
             'name' => $product->get_title(),
@@ -128,7 +128,7 @@ class WC_Zipmoney_Payment_Gateway_API_Abstract {
             'product_code' => strval($product->get_id())
         );
 
-        $attachment_ids = $product->get_gallery_attachment_ids();
+        $attachment_ids = WC_Zipmoney_Payment_Gateway_Util::get_product_images_ids($product);
         if (!empty($attachment_ids)) {
             $order_item_data['image_uri'] = wp_get_attachment_url($attachment_ids[0]);
         }

@@ -36,7 +36,9 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment
         parent::set_api_key($api_key);
 
         try {
-            $charge_id = get_post_meta($order->id, WC_Zipmoney_Payment_Gateway_Config::META_CHARGE_ID, true);
+            $order_id = WC_Zipmoney_Payment_Gateway_Util::get_order_id($order);
+
+            $charge_id = get_post_meta($order_id, WC_Zipmoney_Payment_Gateway_Config::META_CHARGE_ID, true);
 
             if (empty($charge_id)) {
                 //if the charge id is empty, then we won't process the charge anymore
@@ -97,10 +99,11 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment
             $order->update_status('wc-refunded');
         }
         // Clear transients
-        wc_delete_shop_order_transients($order->id);
+        $order_id = WC_Zipmoney_Payment_Gateway_Util::get_order_id($order);
+        //wc_delete_shop_order_transients($order_id);
 
         //log the message
-        WC_Zipmoney_Payment_Gateway_Util::log(sprintf('ZipMoney refund success! [Order id: %s, Refund id:%s]', $order->id, $refund->getId()));
+        WC_Zipmoney_Payment_Gateway_Util::log(sprintf('ZipMoney refund success! [Order id: %s, Refund id:%s]', $order_id, $refund->getId()));
     }
 
 
@@ -116,14 +119,16 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment
         parent::set_api_key($api_key);
 
         try {
-            $charge_id = get_post_meta($order->id, WC_Zipmoney_Payment_Gateway_Config::META_CHARGE_ID, true);
+            $order_id = WC_Zipmoney_Payment_Gateway_Util::get_order_id($order);
+
+            $charge_id = get_post_meta($order_id, WC_Zipmoney_Payment_Gateway_Config::META_CHARGE_ID, true);
 
             if (empty($charge_id)) {
                 //if the charge id is empty, then we won't process the charge anymore
                 throw new Exception('Empty charge id');
             }
 
-            if ($order->post_status != WC_Zipmoney_Payment_Gateway_Config::ZIP_ORDER_STATUS_AUTHORIZED_KEY) {
+            if ($order->get_status() != WC_Zipmoney_Payment_Gateway_Config::ZIP_ORDER_STATUS_AUTHORIZED_KEY_COMPARE) {
                 //if the order status is not authorized, then we won't charge it again
                 throw new Exception('The order status is not in Authorized status');
             }
@@ -137,7 +142,7 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment
             if($charge->getState() == 'cancelled'){
                 WC_Zipmoney_Payment_Gateway_Util::log('Charge has been cancelled. charge_id: ' . $charge->getId());
 
-                $order->cancel_order(sprintf('The zipMoney charge (id:%s) has been cancelled.', $charge->getId()));
+                $order->update_status( 'wc-cancelled', sprintf('The zipMoney charge (id:%s) has been cancelled.', $charge->getId()) );
                 return true;
             } else {
                 WC_Zipmoney_Payment_Gateway_Util::log('Unable to cancel charge. charge_id: ' . $charge->getId());
@@ -171,14 +176,16 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment
         parent::set_api_key($api_key);
 
         try {
-            $charge_id = get_post_meta($order->id, WC_Zipmoney_Payment_Gateway_Config::META_CHARGE_ID, true);
+
+            $order_id = WC_Zipmoney_Payment_Gateway_Util::get_order_id($order);
+            $charge_id = get_post_meta($order_id, WC_Zipmoney_Payment_Gateway_Config::META_CHARGE_ID, true);
 
             if (empty($charge_id)) {
                 //if the charge id is empty, then we won't process the charge anymore
                 throw new Exception('Empty charge id');
             }
 
-            if ($order->post_status != WC_Zipmoney_Payment_Gateway_Config::ZIP_ORDER_STATUS_AUTHORIZED_KEY) {
+            if ($order->get_status() != WC_Zipmoney_Payment_Gateway_Config::ZIP_ORDER_STATUS_AUTHORIZED_KEY_COMPARE) {
                 //if the order status is not authorized, then we won't charge it again
                 throw new Exception('The order status is not in Authorized status');
             }
@@ -246,18 +253,20 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment
 
             $body = self::_prepare_charges_request($WC_Session);
 
+            $order_id = WC_Zipmoney_Payment_Gateway_Util::get_order_id($order);
+
             //log the post body
             WC_Zipmoney_Payment_Gateway_Util::log(
-                sprintf('Request charge order (%s):', $order->id) . WC_Zipmoney_Payment_Gateway_Util::object_json_encode($body),
+                sprintf('Request charge order (%s):', $order_id) . WC_Zipmoney_Payment_Gateway_Util::object_json_encode($body),
                 WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG
             );
 
             //write the charge object info to order meta
-            update_post_meta($order->id, WC_Zipmoney_Payment_Gateway_Config::META_CHECKOUT_ID, $checkout_id);
+            update_post_meta($order_id, WC_Zipmoney_Payment_Gateway_Config::META_CHECKOUT_ID, $checkout_id);
 
             $user_id = $WC_Session->get(WC_Zipmoney_Payment_Gateway_Config::META_USER_ID, '');
             if (!empty($user_id)) {
-                update_post_meta($order->id, '_customer_user', $user_id);
+                update_post_meta($order_id, '_customer_user', $user_id);
             }
 
             $charge = $this->api_instance->chargesCreate($body, WC_Zipmoney_Payment_Gateway_Util::get_uuid());
@@ -267,7 +276,7 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment
 
             //log the charge information
             WC_Zipmoney_Payment_Gateway_Util::log(
-                sprintf('Order (%s) Charge response:', $order->id) . WC_Zipmoney_Payment_Gateway_Util::object_json_encode($charge),
+                sprintf('Order (%s) Charge response:', $order_id) . WC_Zipmoney_Payment_Gateway_Util::object_json_encode($charge),
                 WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG
             );
 
@@ -278,7 +287,7 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment
             }
 
             //set the charge id to order
-            update_post_meta($order->id, WC_Zipmoney_Payment_Gateway_Config::META_CHARGE_ID, $charge->getId());
+            update_post_meta($order_id, WC_Zipmoney_Payment_Gateway_Config::META_CHARGE_ID, $charge->getId());
 
             if ($charge->getState() == 'captured') {
                 //if the payment is captured, we will complete the order

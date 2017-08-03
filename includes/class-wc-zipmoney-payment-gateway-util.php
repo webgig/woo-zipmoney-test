@@ -8,6 +8,48 @@ class WC_Zipmoney_Payment_Gateway_Util
     public static $config_log_level = WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_ALL;
 
     /**
+     * Return product description
+     *
+     * @param WC_Product $product
+     * @return string
+     */
+    public static function get_product_description(WC_Product $product)
+    {
+        if (self::is_wc_3()) {
+            return $product->get_description();
+        }
+
+        return empty($product->post->post_excerpt) ? '' : $product->post->post_excerpt;
+    }
+
+    /**
+     * Make it compatible with WooCommerce version >= 3.0.0
+     *
+     * @param WC_Order $order
+     * @return int
+     */
+    public static function get_order_id(WC_Order $order)
+    {
+        return self::is_wc_3() ? $order->get_id() : $order->id;
+    }
+
+    /**
+     * Make it compatible with WooCommerce version >= 3.0.0
+     *
+     * @param WC_Product $product
+     * @return array
+     */
+    public static function get_product_images_ids(WC_Product $product)
+    {
+        return self::is_wc_3() ? $product->get_gallery_image_ids() : $product->get_gallery_attachment_ids();
+    }
+
+    private static function is_wc_3()
+    {
+        return version_compare(WC()->version, '3.0.0', '>=');
+    }
+
+    /**
      * Log the message when necessary
      *
      * @param $message

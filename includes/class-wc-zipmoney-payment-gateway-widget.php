@@ -96,7 +96,7 @@ class WC_Zipmoney_Payment_Gateway_Widget
      */
     public function action_add_charge_buttons(WC_Order $order)
     {
-        include plugin_dir_path(dirname(__FILE__)) . 'includes/view/frontend/charge_buttons.php';
+        include plugin_dir_path(dirname(__FILE__)) . 'includes/view/backend/charge_buttons.php';
     }
 
 
