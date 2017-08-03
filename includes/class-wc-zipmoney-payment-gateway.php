@@ -41,6 +41,7 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
     {
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wc-zipmoney-payment-gateway-config.php';
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wc-zipmoney-payment-gateway-widget.php';
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wc-zipmoney-payment-gateway-util.php';
     }
 
     /**
@@ -82,6 +83,10 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
     {
         $this->WC_Zipmoney_Payment_Gateway_Config = new WC_Zipmoney_Payment_Gateway_Config($this);
         $this->WC_Zipmoney_Payment_Gateway_Widget = new WC_Zipmoney_Payment_Gateway_Widget($this);
+
+        //check the logger is enable or not
+        WC_Zipmoney_Payment_Gateway_Util::$config_log_enable =
+            $this->WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DEBUG);
 
         //load the hooks
         self::_init_hooks();
