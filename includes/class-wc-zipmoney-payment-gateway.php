@@ -11,6 +11,9 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
 
     public $form_fields;
 
+    public $WC_Zipmoney_Payment_Gateway_Config;
+    public $WC_Zipmoney_Payment_Gateway_Widget;
+
     public function __construct()
     {
         //load dependencies
@@ -23,51 +26,53 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
         self::init_form_fields();
     }
 
-
+    /**
+     * Initialize the web hook
+     */
     private function _init_hooks()
     {
         //save admin options
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 
-        //show
+        $this->WC_Zipmoney_Payment_Gateway_Widget->init_hooks();
     }
-
 
     private function _load_dependencies()
     {
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wc-zipmoney-payment-gateway-config.php';
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wc-zipmoney-payment-gateway-widget.php';
     }
 
-    public function init_settings()
-    {
-        //load the parent settings
-        parent::init_settings();
-    }
-
+    /**
+     * Return the form fields array
+     */
     public function init_form_fields()
     {
         $this->form_fields = WC_Zipmoney_Payment_Gateway_Config::get_admin_form_fields();
     }
 
+    /**
+     * Print the admin options fields
+     */
     public function admin_options()
     {
-        echo '<h3>';
-        _e($this->method_title, 'woocommerce');
-        echo '</h3>';
-        echo '<p>';
-        _e($this->method_description, 'woocommerce');
-        echo '</p>';
-        echo '<table class="form-table">';
-        echo parent::generate_settings_html();
-        echo '</table>';
-        echo '<script src="' . esc_url(plugins_url('assets/js/admin_options.js', dirname(__FILE__))) . '"></script>';
+        //this variable will be used in the include php file
+        $admin_option_js = esc_url(plugins_url('assets/js/admin_options.js', dirname(__FILE__)));
+
+        include plugin_dir_path(dirname(__FILE__)) . 'includes/view/backend/admin_options.php';
     }
 
+
+    /**
+     * Add the hash api key process into admin option processing
+     *
+     * @return bool
+     */
     public function process_admin_options()
     {
         $result = parent::process_admin_options();
 
-        WC_Zipmoney_Payment_Gateway_Config::hash_api_key($this);
+        $this->WC_Zipmoney_Payment_Gateway_Config->hash_api_key($this);
 
         return $result;
     }
@@ -75,7 +80,11 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
 
     public function run()
     {
+        $this->WC_Zipmoney_Payment_Gateway_Config = new WC_Zipmoney_Payment_Gateway_Config($this);
+        $this->WC_Zipmoney_Payment_Gateway_Widget = new WC_Zipmoney_Payment_Gateway_Widget($this);
+
         //load the hooks
         self::_init_hooks();
     }
+
 }

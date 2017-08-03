@@ -1,6 +1,6 @@
 jQuery('#woocommerce_zipmoney_sandbox').change(function () {
-    var sandbox = jQuery('#woocommerce_zipmoney_sandbox_merchant_id, #woocommerce_zipmoney_sandbox_merchant_key').closest('tr');
-    production = jQuery('#woocommerce_zipmoney_merchant_id, #woocommerce_zipmoney_merchant_key').closest('tr');
+    var sandbox = jQuery('#woocommerce_zipmoney_sandbox_merchant_public_key, #woocommerce_zipmoney_sandbox_merchant_private_key').closest('tr');
+    production = jQuery('#woocommerce_zipmoney_merchant_public_key, #woocommerce_zipmoney_merchant_private_key').closest('tr');
 
     if (jQuery(this).is(':checked')) {
         sandbox.show();
@@ -14,7 +14,7 @@ jQuery('#woocommerce_zipmoney_sandbox').change(function () {
 
 jQuery('#woocommerce_zipmoney_display_banners').change(function () {
 
-    var banner_settings = jQuery('#woocommerce_zipmoney_display_banner_shop, #woocommerce_zipmoney_display_banner_productpage, #woocommerce_zipmoney_display_banner_category, #woocommerce_zipmoney_display_banner_cart');
+    var banner_settings = jQuery('#woocommerce_zipmoney_display_banner_shop, #woocommerce_zipmoney_display_banner_product_page, #woocommerce_zipmoney_display_banner_category, #woocommerce_zipmoney_display_banner_cart');
     var banner_settings_tr = banner_settings.closest('tr');
 
     if (jQuery(this).is(':checked')) {
@@ -27,7 +27,7 @@ jQuery('#woocommerce_zipmoney_display_banners').change(function () {
 
 jQuery('#woocommerce_zipmoney_display_widget').change(function () {
 
-    var banner_settings = jQuery('#woocommerce_zipmoney_display_widget_productpage, #woocommerce_zipmoney_display_widget_cart');
+    var banner_settings = jQuery('#woocommerce_zipmoney_display_widget_product_page, #woocommerce_zipmoney_display_widget_cart');
     var banner_settings_tr = banner_settings.closest('tr');
 
     if (jQuery(this).is(':checked')) {
@@ -40,7 +40,7 @@ jQuery('#woocommerce_zipmoney_display_widget').change(function () {
 
 jQuery('#woocommerce_zipmoney_is_express').change(function () {
 
-    var banner_settings = jQuery('#woocommerce_zipmoney_is_express_productpage, #woocommerce_zipmoney_is_express_cart');
+    var banner_settings = jQuery('#woocommerce_zipmoney_is_express_product_page, #woocommerce_zipmoney_is_express_cart');
     var banner_settings_tr = banner_settings.closest('tr');
 
     if (jQuery(this).is(':checked')) {

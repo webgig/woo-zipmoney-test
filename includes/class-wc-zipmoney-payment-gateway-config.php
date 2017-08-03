@@ -1,14 +1,21 @@
 <?php
+
 class WC_Zipmoney_Payment_Gateway_Config
 {
+    const PLATFORM = 'Woocommerce';
+    const CLIENT = 'WooCommerce ZipMoney Payment API';
+
     const LOGO_SOURCE_URL = "http://d3k1w8lx8mqizo.cloudfront.net/logo/25px/";
+
+    const IFRAME_API_URL_PRODUCTION = 'https://account.zipmoney.com.au/scripts/iframe/zipmoney-checkout.js';
+    const IFRAME_API_URL_SANDBOX = 'https://account.sandbox.zipmoney.com.au/scripts/iframe/zipmoney-checkout.js';
 
     const CONFIG_ENABLED = 'enabled';
     const CONFIG_SANDBOX = 'sandbox';
-    const CONFIG_SANDBOX_MERCHANT_ID = 'sandbox_merchant_id';
-    const CONFIG_SANDBOX_MERCHANT_KEY = 'sandbox_merchant_key';
-    const CONFIG_MERCHANT_ID = 'merchant_id';
-    const CONFIG_MERCHANT_KEY = 'merchant_key';
+    const CONFIG_SANDBOX_MERCHANT_PUBLIC_KEY = 'sandbox_merchant_public_key';
+    const CONFIG_SANDBOX_MERCHANT_PRIVATE_KEY = 'sandbox_merchant_private_key';
+    const CONFIG_MERCHANT_PUBLIC_KEY = 'merchant_public_key';
+    const CONFIG_MERCHANT_PRIVATE_KEY = 'merchant_private_key';
     const CONFIG_DEBUG = 'debug';
     const CONFIG_IS_EXPRESS = 'is_express';
     const CONFIG_IS_EXPRESS_PRODUCT_PAGE = 'is_express_product_page';
@@ -26,12 +33,26 @@ class WC_Zipmoney_Payment_Gateway_Config
     const CONFIG_DISPLAY_TAGLINE_CART = 'display_tagline_cart';
 
     const SINGLE_CONFIG_API_KEY = '_api_hash';
+    const SINGLE_CONFIG_API_SETTINGS = '_api_settings';
 
 
     public static $zip_order_status = array(
         'wc-zip-authorised' => 'Authorised',
         'wc-zip-under-review' => 'Under Review'
     );
+
+    public $WC_Zipmoney_Payment_Gateway;
+
+    /**
+     * We need to load the gateway class to use it's build-in functions
+     *
+     * WC_Zipmoney_Payment_Gateway_Config constructor.
+     * @param WC_Zipmoney_Payment_Gateway $WC_Zipmoney_Payment_Gateway
+     */
+    public function __construct(WC_Zipmoney_Payment_Gateway $WC_Zipmoney_Payment_Gateway)
+    {
+        $this->WC_Zipmoney_Payment_Gateway = $WC_Zipmoney_Payment_Gateway;
+    }
 
     //return the admin form fields
     public static function get_admin_form_fields(){
@@ -50,29 +71,29 @@ class WC_Zipmoney_Payment_Gateway_Config
                 'desc_tip' => __('Place the payment gateway in sandbox mode using sandbox API credentials for testing.', 'woocommerce'),
                 'default' => 'no'
             ),
-            self::CONFIG_SANDBOX_MERCHANT_ID => array(
-                'title' => __('Sandbox Merchant ID', 'woocommerce'),
+            self::CONFIG_SANDBOX_MERCHANT_PUBLIC_KEY => array(
+                'title' => __('Sandbox Merchant Public Key', 'woocommerce'),
                 'type' => 'text',
-                'desc_tip' => __('Get your Sandbox Merchant ID from your zipMoney account.', 'woocommerce'),
+                'desc_tip' => __('Get your Sandbox Merchant Public Key from your zipMoney account.', 'woocommerce'),
                 'default' => '',
             ),
 
-            self::CONFIG_SANDBOX_MERCHANT_KEY => array(
-                'title' => __('Sandbox Merchant Key', 'woocommerce'),
+            self::CONFIG_SANDBOX_MERCHANT_PRIVATE_KEY => array(
+                'title' => __('Sandbox Merchant Private Key', 'woocommerce'),
                 'type' => 'text',
-                'desc_tip' => __('Get your Sandbox Merchant Key from your zipMoney account.', 'woocommerce'),
+                'desc_tip' => __('Get your Sandbox Merchant Private Key from your zipMoney account.', 'woocommerce'),
                 'default' => '',
             ),
-            self::CONFIG_MERCHANT_ID => array(
-                'title' => __('Merchant ID', 'woocommerce'),
+            self::CONFIG_MERCHANT_PUBLIC_KEY => array(
+                'title' => __('Merchant Public Key', 'woocommerce'),
                 'type' => 'text',
-                'desc_tip' => __('Get your Merchant ID from your zipMoney account.', 'woocommerce'),
+                'desc_tip' => __('Get your Merchant Public Key from your zipMoney account.', 'woocommerce'),
                 'default' => '',
             ),
-            self::CONFIG_MERCHANT_KEY => array(
+            self::CONFIG_MERCHANT_PRIVATE_KEY => array(
                 'title' => __('Merchant Key', 'woocommerce'),
                 'type' => 'text',
-                'desc_tip' => __('Get your Merchant Key from your zpMoney account.', 'woocommerce'),
+                'desc_tip' => __('Get your Merchant Private Key from your zpMoney account.', 'woocommerce'),
                 'default' => '',
             ),
             self::CONFIG_DEBUG => array(
@@ -166,35 +187,52 @@ class WC_Zipmoney_Payment_Gateway_Config
         );
     }
 
+    public function get_checkout_redirect_url()
+    {
+        $url = get_home_url();
+
+        if(self::get_bool_config_by_key(self::CONFIG_IS_IFRAME_FLOW)){
+            $url .= '/zipmoneypayment/expresscheckout/getredirecturl/';
+        } else {
+            $url .= '/zipmoneypayment/expresscheckout/';
+        }
+
+        if (is_product()) {
+            global $product;
+            $checkout_url = add_query_arg(array(
+                'product_id' => $product->id,
+                'checkout_source' => 'product_page'
+            ), $url);
+        } elseif (is_cart()) {
+            $checkout_url = add_query_arg(array(
+                'checkout_source' => 'cart'
+            ), $url);
+        } else {
+            $checkout_url = add_query_arg(array(
+                'checkout_source' => 'checkout'
+            ), $url);
+        }
+
+        return $checkout_url;
+    }
+
     /**
      * Hash the updated merchant_id and merchant_key into a md5 key.
      * This function will be called in the config save hook.
      *
-     *
-     * @param WC_Zipmoney_Payment_Gateway $WC_Zipmoney_Payment_Gateway
      */
-    public static function hash_api_key(WC_Zipmoney_Payment_Gateway $WC_Zipmoney_Payment_Gateway)
+    public function hash_api_key()
     {
-        $is_sandbox = self::get_bool_config_by_key($WC_Zipmoney_Payment_Gateway, self::CONFIG_SANDBOX);
-
-        $merchant_id = null;
-        $merchant_key = null;
-
-        if($is_sandbox == true) {
-            $merchant_id = $WC_Zipmoney_Payment_Gateway->get_option(self::CONFIG_SANDBOX_MERCHANT_ID);
-            $merchant_key = $WC_Zipmoney_Payment_Gateway->get_option(self::CONFIG_SANDBOX_MERCHANT_KEY);
-        } else {
-            $merchant_id = $WC_Zipmoney_Payment_Gateway->get_option(self::CONFIG_MERCHANT_ID);
-            $merchant_key = $WC_Zipmoney_Payment_Gateway->get_option(self::CONFIG_MERCHANT_KEY);
-        }
+        $merchant_public_key = self::get_merchant_public_key();
+        $merchant_private_key = self::get_merchant_private_key();
 
         //get the update key
-        $update_key = self::get_single_config_key($WC_Zipmoney_Payment_Gateway, self::SINGLE_CONFIG_API_KEY);
+        $update_key = self::get_single_config_key(self::SINGLE_CONFIG_API_KEY);
 
         $current_api_hash = get_option($update_key, true);
 
         //hash the new changes
-        $new_hash = md5(serialize(array($merchant_id, $merchant_key)));
+        $new_hash = md5(serialize(array($merchant_public_key, $merchant_private_key)));
 
         if($current_api_hash !== $new_hash) {
             //update config in single entry
@@ -203,29 +241,66 @@ class WC_Zipmoney_Payment_Gateway_Config
     }
 
     /**
+     * Return the environment
+     *
+     * @return string
+     */
+    public function get_environment()
+    {
+        return self::get_bool_config_by_key(self::CONFIG_SANDBOX) ? 'sandbox' : 'production';
+    }
+
+    /**
+     * Get the merchant public key
+     *
+     * @return string
+     */
+    public function get_merchant_public_key()
+    {
+        if(self::get_bool_config_by_key(self::CONFIG_SANDBOX)){
+            return $this->WC_Zipmoney_Payment_Gateway->get_option(self::CONFIG_SANDBOX_MERCHANT_PUBLIC_KEY);
+        }
+
+        return $this->WC_Zipmoney_Payment_Gateway->get_option(self::CONFIG_MERCHANT_PUBLIC_KEY);
+    }
+
+    /**
+     * Get the merchant private key
+     *
+     * @return string
+     */
+    public function get_merchant_private_key()
+    {
+        if(self::get_bool_config_by_key(self::CONFIG_SANDBOX)){
+            return $this->WC_Zipmoney_Payment_Gateway->get_option(self::CONFIG_SANDBOX_MERCHANT_PRIVATE_KEY);
+        }
+
+        return $this->WC_Zipmoney_Payment_Gateway->get_option(self::CONFIG_MERCHANT_PRIVATE_KEY);
+    }
+
+
+    /**
      * Get the single config key.
      * It's a single entry in the config table.
      *
-     * @param WC_Zipmoney_Payment_Gateway $WC_Zipmoney_Payment_Gateway
      * @param $key
      * @return string
      */
-    public static function get_single_config_key(WC_Zipmoney_Payment_Gateway $WC_Zipmoney_Payment_Gateway, $key)
+    public function get_single_config_key($key)
     {
-        return $WC_Zipmoney_Payment_Gateway->plugin_id . $WC_Zipmoney_Payment_Gateway->id . $key;
+        return $this->WC_Zipmoney_Payment_Gateway->plugin_id . $this->WC_Zipmoney_Payment_Gateway->id . $key;
     }
 
     /**
      * Get the config value by key.
      * NOTE: The value must be 'yes' or 'no'
      *
-     * @param WC_Zipmoney_Payment_Gateway $WC_Zipmoney_Payment_Gateway
      * @param $key
      * @return bool
      */
-    public static function get_bool_config_by_key(WC_Zipmoney_Payment_Gateway $WC_Zipmoney_Payment_Gateway, $key)
+    public function get_bool_config_by_key($key)
     {
-        return $WC_Zipmoney_Payment_Gateway->get_option($key) === 'yes' ? true : false;
+        return $this->WC_Zipmoney_Payment_Gateway->get_option($key) === 'yes' ? true : false;
     }
 
 }

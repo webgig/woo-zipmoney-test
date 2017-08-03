@@ -24,11 +24,6 @@ if (!defined('WPINC')) {
 
 
 /**
- * Include the core class responsible for loading all necessary components of the plugin.
- */
-require_once plugin_dir_path(__FILE__) . 'includes/class-wc-zipmoney-payment-gateway.php';
-
-/**
  * Add zipMoney gateway class to hook
  *
  * @param $methods
@@ -46,6 +41,11 @@ function add_zipmoney_gateway_class($methods)
  */
 function run_zipmoney_payment_gateway()
 {
+    /**
+     * Include the core class responsible for loading all necessary components of the plugin.
+     */
+    require_once plugin_dir_path(__FILE__) . 'includes/class-wc-zipmoney-payment-gateway.php';
+
     if (!class_exists('WC_Payment_Gateway')) {
         //if the woocommerce payment gateway is not defined, then we won't activate the zipmoney payment gateway
         return;

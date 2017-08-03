@@ -1,0 +1,39 @@
+.zm-loader span{
+  padding-left: 30px;   
+  font-size: 14px; 
+}
+
+.widget-product-cart,.zip-express-payment-button{
+  clear:both;
+}
+
+.zm-loader:before{
+    height: 1em;
+    width: 1em;
+    position: absolute;
+    content: "";
+    -webkit-animation: spin 1s ease-in-out infinite;
+    -moz-animation: spin 1s ease-in-out infinite;
+    animation: spin 1s ease-in-out infinite;
+    background: url(../../../woocommerce/assets/images/icons/loader.svg) center center;
+    background-size: cover;
+    line-height: 1;
+    text-align: center;
+    font-size: 1em;
+    color: rgba(0,0,0,.75);
+    margin-top: 5px;
+    margin-left:0px;
+}
+
+a.zip-productbuttonlink{
+  font-size: 11px; 
+  cursor: pointer;
+  display: inline !important;
+  text-decoration:none;
+  border:none;
+}
+
+a#zipmoney-learn-more{
+  cursor: pointer;
+  display: inline !important;
+}
