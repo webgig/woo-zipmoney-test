@@ -89,12 +89,10 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment
      */
     private function _update_order_refund(WC_Order $order, Refund $refund)
     {
-        $order_remain_total = wc_format_decimal($order->get_total() - $order->get_total_refunded());
-
         //write the order note
         $order->add_order_note(sprintf('The ZipMoney refund has been successfully performed. [Charge id:%s, Refund id:%s, Amount: %s]', $refund->getChargeId(), $refund->getId(), $refund->getAmount()));
 
-        if (wc_format_decimal($refund->getAmount()) == $order_remain_total) {
+        if (wc_format_decimal($order->get_total()) == wc_format_decimal($order->get_total_refunded())) {
             //if the order is fully refunded
             $order->update_status('wc-refunded');
         }

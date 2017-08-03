@@ -16,22 +16,14 @@
                     redirect: <?php echo $is_iframe_checkout ? 0 : 1?>,
                     checkoutUri: '<?php echo WC_Zipmoney_Payment_Gateway_Util::get_checkout_endpoint_url();?>',
                     redirectUri: '<?php echo WC_Zipmoney_Payment_Gateway_Util::get_complete_endpoint_url()?>',
-                    onComplete: function(response){
+                    onComplete: function (response) {
                         console.log('onComplete is called.');
 
                         console.log(response);
 
-                        switch (response.state) {
-                            case 'cancelled':
-                                zipMoneyErrorDiv.show();
-                                zipMoneyErrorDiv.text('The zipMoney checkout has been cancelled.');
-                                break;
-                            case 'approved':
-                                zipMoneyInfoDiv.show();
-                                zipMoneyInfoDiv.text('The zipMoney checkout has bee approved. Redirecting...');
-                            default:
-                                location.href = "<?php echo WC_Zipmoney_Payment_Gateway_Util::get_complete_endpoint_url();?>?result=" +
-                                    response.state + "&checkoutId=" + response.checkoutId;
+                        if (response.state == "approved" || response.state == "referred") {
+                            location.href = "<?php echo WC_Zipmoney_Payment_Gateway_Util::get_complete_endpoint_url();?>?result=" +
+                                response.state + "&checkoutId=" + response.checkoutId;
                         }
                     },
                     onError: function(response){

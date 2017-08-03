@@ -214,6 +214,8 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
 
         $order = new WC_Order($order_id);
 
+        WC_Zipmoney_Payment_Gateway_Util::log(sprintf('order value: %s, amount: %s, refund: %s', $order->get_total(), $amount, $order->get_total_refunded()));
+
         $this->WC_Zipmoney_Payment_Gateway_Config = new WC_Zipmoney_Payment_Gateway_Config($this);
         $WC_Zipmoney_Payment_Gateway_API_Request_Charge = new WC_Zipmoney_Payment_Gateway_API_Request_Charge(
             $this,
@@ -250,12 +252,21 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
         switch ($action_type){
             case 'create':
                 $result = $charge_controller->create_charge($_GET);
+
                 if ($result['result'] == true) {
+                    //successfully create charge
                     wp_redirect($this->get_return_url($result['order']));
-                } else {
-                    WC_Zipmoney_Payment_Gateway_Util::show_notification_page($result['title'], $result['content']);
                     exit;
                 }
+
+                if (!empty($result['redirect_url'])) {
+                    //if it contains redirect url
+                    wp_redirect($result['redirect_url']);
+                    exit;
+                }
+
+                WC_Zipmoney_Payment_Gateway_Util::show_notification_page($result['title'], $result['content']);
+                exit;
                 break;
             case 'capture':
                 $charge_controller->capture_charge($_POST['zip_order_id']);

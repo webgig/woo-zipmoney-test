@@ -249,12 +249,7 @@ class WC_Zipmoney_Payment_Gateway_Widget
 
         wp_register_script('wc-zipmoney-checkout-js', 'https://static.zipmoney.com.au/checkout/checkout-v1.js', array('jquery'));
         wp_enqueue_script('wc-zipmoney-checkout-js');
-
-        $is_sandbox = $this->WC_Zipmoney_Payment_Gateway->WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_SANDBOX);
-
-        $iframe_lib_url = $is_sandbox ? WC_Zipmoney_Payment_Gateway_Config::IFRAME_API_URL_SANDBOX : WC_Zipmoney_Payment_Gateway_Config::IFRAME_API_URL_PRODUCTION;
-
-        wp_register_script('wc-zipmoney-js', $iframe_lib_url);
+        
         wp_enqueue_script('wc-zipmoney-js');
     }
 
