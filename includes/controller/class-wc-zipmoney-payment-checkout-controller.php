@@ -1,5 +1,7 @@
 <?php
 
+use \zipMoney\Api\CheckoutsApi;
+
 class WC_Zip_Controller_Checkout_Controller extends WC_Zip_Controller_Abstract_Controller
 {
 
@@ -10,7 +12,10 @@ class WC_Zip_Controller_Checkout_Controller extends WC_Zip_Controller_Abstract_C
     {
         WC_Zipmoney_Payment_Gateway_Util::log('Checkout session started');
 
-        $WC_Zipmoney_Payment_Gateway_API_Request_Checkout = new WC_Zipmoney_Payment_Gateway_API_Request_Checkout($this->WC_Zipmoney_Payment_Gateway);
+        $WC_Zipmoney_Payment_Gateway_API_Request_Checkout = new WC_Zipmoney_Payment_Gateway_API_Request_Checkout(
+            $this->WC_Zipmoney_Payment_Gateway,
+            new CheckoutsApi()
+        );
 
         $checkout_response = $WC_Zipmoney_Payment_Gateway_API_Request_Checkout->create_checkout(
             WC()->session,

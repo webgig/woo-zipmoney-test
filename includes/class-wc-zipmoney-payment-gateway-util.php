@@ -222,7 +222,11 @@ class WC_Zipmoney_Payment_Gateway_Util
             'code' => $exception->getCode()
         );
 
-        $error_code = $exception->getResponseObject()->getError()->getCode();
+        $error_code = 0;
+
+        if(!empty($exception->getResponseObject())){
+            $error_code = $exception->getResponseObject()->getError()->getCode();
+        }
 
         if($exception->getCode() == 402 && !empty($error_codes_map[$error_code])){
             $response['message'] = sprintf('The payment was declined by Zip.(%s)', $error_codes_map[$error_code]);
@@ -263,7 +267,7 @@ class WC_Zipmoney_Payment_Gateway_Util
             }
         }
 
-        $ship_to_different_address = (bool)$customer_details['ship_to_different_address'];
+        $ship_to_different_address = empty($customer_details['ship_to_different_address']);
 
         //The address keys used for iterate the shipping and billing address
         $address_keys = array(

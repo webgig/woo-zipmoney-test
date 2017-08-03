@@ -30,6 +30,9 @@ class WC_Zipmoney_Payment_Gateway_Widget
         //Tag line
         self::_add_tagline_hook($WC_Zipmoney_Payment_Gateway_Config);
 
+        //Widget
+        self::_add_widget_hook($WC_Zipmoney_Payment_Gateway_Config);
+
         //Add the express button
         //TODO: Express checkout is not completed at this state
 //        self::_add_express_button_hook($WC_Zipmoney_Payment_Gateway_Config);
@@ -81,7 +84,7 @@ class WC_Zipmoney_Payment_Gateway_Widget
      * @param $instance
      * @return array
      */
-    public function filter_add_authorize_order_status_for_payment_complete($statuses, $instance)
+    public function filter_add_authorize_order_status_for_payment_complete($statuses, $instance = null)
     {
         $statuses[] = str_replace('wc-', '', WC_Zipmoney_Payment_Gateway_Config::ZIP_ORDER_STATUS_AUTHORIZED_KEY);
 
@@ -97,6 +100,33 @@ class WC_Zipmoney_Payment_Gateway_Widget
     {
         include plugin_dir_path(dirname(__FILE__)) . 'includes/view/frontend/charge_buttons.php';
     }
+
+
+    /**
+     * Add the widget hook
+     *
+     * @param WC_Zipmoney_Payment_Gateway_Config $WC_Zipmoney_Payment_Gateway_Config
+     */
+    private function _add_widget_hook(WC_Zipmoney_Payment_Gateway_Config $WC_Zipmoney_Payment_Gateway_Config)
+    {
+        $config_display_widget = $WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_WIDGET);
+
+        if($config_display_widget){
+            //if the widget is enable
+            add_action('zipmoney_wc_render_widget_general', array($this, 'render_widget_general'), 10);
+
+            if($WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_WIDGET_PRODUCT_PAGE)){
+                //product page widget
+                add_action('woocommerce_after_add_to_cart_button', array($this, 'render_widget_product'));
+            }
+
+            if($WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_WIDGET_CART)) {
+                //cart page widget
+                add_action('woocommerce_proceed_to_checkout', array($this, 'render_widget_cart'), 20);
+            }
+        }
+    }
+
 
     /**
      * TODO: Express checkout is disabled at this state. It will be implemented in the future
@@ -148,6 +178,16 @@ class WC_Zipmoney_Payment_Gateway_Widget
         if($WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_TAGLINE_CART)){
             add_action('woocommerce_proceed_to_checkout', array($this, 'render_tagline'), 10);
         }
+    }
+
+    /**
+     * Renders the widget below add to cart / proceed to checkout button in product or cart pages.
+     *
+     * @access public
+     */
+    public function render_widget_cart()
+    {
+        echo '<div class="widget-cart" data-zm-asset="cartwidget" zm-widget="popup"  data-zm-popup-asset="termsdialog"></div>';
     }
 
     /**

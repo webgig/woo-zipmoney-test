@@ -23,11 +23,11 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
         //load dependencies
         self::_load_dependencies();
 
-        //load settings
-        self::init_settings();
-
         //load form fields
         self::init_form_fields();
+
+        //load settings
+        self::init_settings();
     }
 
     /**
@@ -215,7 +215,10 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
         $order = new WC_Order($order_id);
 
         $this->WC_Zipmoney_Payment_Gateway_Config = new WC_Zipmoney_Payment_Gateway_Config($this);
-        $WC_Zipmoney_Payment_Gateway_API_Request_Charge = new WC_Zipmoney_Payment_Gateway_API_Request_Charge($this);
+        $WC_Zipmoney_Payment_Gateway_API_Request_Charge = new WC_Zipmoney_Payment_Gateway_API_Request_Charge(
+            $this,
+            new \zipMoney\Api\RefundsApi()
+        );
 
         $amount = empty($amount) ? 0 : $amount;
         $reason = empty($reason) ? 'No reason' : $reason;

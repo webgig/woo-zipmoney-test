@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Woocommerce zipMoney Payments" default="build" basedir=".">
+    <property file="./build.properties" />
+
+    <property name="tmp-dir" value="/tmp/"/>
+    <property name="wp.base_dir" value="${tmp-dir}/wordpress" />
+    <property name="wp.lib_dir" value="${tmp-dir}/wordpress-tests-lib" />
+    <property name="extension.base_dir" value="${project.basedir}" />
+    <property name="vendor-dir" value="${project.basedir}/vendor/"/>
+
+    <property name="bin.composer"   value="${vendor-dir}bin/composer --working-dir=${project.basedir}"/>
+    <property name="bin.wp"         value="${vendor-dir}bin/wp" />
+    <property name="bin.wc-setup"   value="${vendor-dir}webgig/wc-setup/bin/wc-setup" />
+    <property name="bin.phpunit"    value="${vendor-dir}bin/phpunit" />
+    <property environment="env"/>
+
+
+    <property name="db.name.safe" refid="db.name">
+        <filterchain>
+            <replaceregexp>
+                <regexp pattern="[^0-9a-zA-Z$_]" replace="_" ignoreCase="true"/>
+            </replaceregexp>
+        </filterchain>
+    </property>
+
+    <target name="install" depends="install-wordpress,install-woocommerce" description="Install Wordpress and Woocommerce" />
+
+    <target name="test" depends="test-phpunit" description="Run available tests" />
+
+    <target name="validate-build-properties" description="Ensure all require properties are defined">
+        <if>
+            <not><isset property="wp.version"/></not>
+            <then><fail>wp.version is not specified</fail></then>
+        </if>
+        <if>
+            <not><isset property="wp.base_url"/></not>
+            <then><fail>wp.base_url is not specified</fail></then>
+        </if>  
+        <if>
+            <not><isset property="wp.multisite"/></not>
+            <then><fail>wp.multisite is not specified</fail></then>
+        </if> 
+        <if>
+            <not><isset property="wc.version"/></not>
+            <then><fail>wc.version is not specified</fail></then>
+        </if>
+        <if>
+            <not><isset property="db.user"/></not>
+            <then><fail>db.user is not specified</fail></then>
+        </if>
+        <if>
+            <not><isset property="db.name"/></not>
+            <then><fail>db.name is not specified</fail></then>
+        </if>
+        <if>
+            <not><isset property="db.pass"/></not>
+            <then><fail>db.pass is not specified</fail></then>
+        </if>  
+        <if>
+            <not><isset property="package.name"/></not>
+            <then><fail>package.name is not specified</fail></then>
+        </if>
+    </target>
+
+
+    <target name="install-deps" description="Install all required dependencies">
+        <exec command="${bin.composer} install" passthru="true" checkreturn="true" />
+    </target>
+
+    <target name="clean"  description="Remove Wordpress directory and Wordpress database">
+       
+        <exec command="rm -rf ./${package.name}-v*.zip" />   
+        <exec command="mysqladmin -f drop ${db.name} -u${db.user} -p${db.pass}" />
+        
+        <delete dir="${wp.base_dir}" />
+        <delete dir="${wp.lib_dir}" />       
+    </target>
+
+    <target name="install-wordpress"  description="Install Wordpress and Woocomerce  in the ${tmp-dir} directory">
+        <if>
+            <not><available type="dir" file="${wp.base_dir}" /></not>
+            <then>
+                <exec command="${bin.wc-setup} ${db.name.safe} ${db.user} ${db.pass} ${db.host} ${wp.version}" passthru="true" checkreturn="true" />                        
+                <exec command="php ${wp.lib_dir}/includes/install.php ${wp.lib_dir}/wp-tests-config.php {$wp.multisite}" passthru="true" checkreturn="true" />                        
+            </then>
+            <else>
+                <echo message="Wordpress is already installed in ${tmp-dir}" />
+            </else>
+        </if>
+    </target>
+    
+    <target name="install-woocommerce"  description="Install Wordpress and Woocomerce  in the ${tmp-dir} directory">                
+        <exec command="${bin.wp} plugin install woocommerce --version='${wc.version}' --path='${wp.base_dir}' --activate" passthru="true" checkreturn="true" />                        
+    </target>
+  
+    <target name="test-phpunit" depends="install,install-deps">
+        <exec command="${bin.phpunit}" passthru="true" checkreturn="true" />
+    </target>
+</project>

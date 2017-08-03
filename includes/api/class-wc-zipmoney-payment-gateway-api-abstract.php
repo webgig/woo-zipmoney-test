@@ -1,7 +1,7 @@
 <?php
-use zipMoney\Model\ShopperStatistics;
-use zipMoney\Model\OrderItem;
-use zipMoney\Model\Address;
+use \zipMoney\Model\ShopperStatistics;
+use \zipMoney\Model\OrderItem;
+use \zipMoney\Model\Address;
 
 
 class WC_Zipmoney_Payment_Gateway_API_Abstract {
@@ -101,6 +101,33 @@ class WC_Zipmoney_Payment_Gateway_API_Abstract {
         return new ShopperStatistics($data);
     }
 
+    protected function _get_order_item_data($item)
+    {
+        $product = new WC_Product($item['product_id']);
+
+        $item_quantity = intval($item['quantity']);
+
+        $description = empty($product->post->post_excerpt)? '':$product->post->post_excerpt;
+
+        $order_item_data = array(
+            'name' => $product->get_title(),
+            'amount' => (floatval($item['line_subtotal']) + floatval($item['line_subtotal_tax'])) / $item_quantity,
+            'reference' => $product->get_sku(),
+            'description' => $description,
+            'quantity' => $item_quantity,
+            'type' => 'sku',
+            'item_uri' => $product->get_permalink(),
+            'product_code' => strval($product->get_id())
+        );
+
+        $attachment_ids = $product->get_gallery_attachment_ids();
+        if (!empty($attachment_ids)) {
+            $order_item_data['image_uri'] = wp_get_attachment_url($attachment_ids[0]);
+        }
+
+        return $order_item_data;
+    }
+
     /**
      * Create the order items
      *
@@ -112,25 +139,7 @@ class WC_Zipmoney_Payment_Gateway_API_Abstract {
         $order_items = array();
 
         foreach ($WC_Session->get('cart', array()) as $id => $item) {
-            $product = new WC_Product($item['product_id']);
-
-            $item_quantity = intval($item['quantity']);
-
-            $order_item_data = array(
-                'name' => $product->get_title(),
-                'amount' => (floatval($item['line_subtotal']) + floatval($item['line_subtotal_tax'])) / $item_quantity,
-                'reference' => $product->get_sku(),
-                'description' => $product->post->post_excerpt,
-                'quantity' => $item_quantity,
-                'type' => 'sku',
-                'item_uri' => $product->get_permalink(),
-                'product_code' => strval($product->get_id())
-            );
-
-            $attachment_ids = $product->get_gallery_attachment_ids();
-            if (!empty($attachment_ids)) {
-                $order_item_data['image_uri'] = wp_get_attachment_url($attachment_ids[0]);
-            }
+            $order_item_data = self::_get_order_item_data($item);
 
             $order_items[] = new OrderItem($order_item_data);
         }

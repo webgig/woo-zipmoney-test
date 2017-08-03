@@ -1,14 +1,21 @@
 <?php
-use zipMoney\Api\CheckoutsApi;
-use zipMoney\Model\CheckoutConfiguration;
-use zipMoney\Model\CreateCheckoutRequest;
-use zipMoney\Model\Shopper;
-use zipMoney\Model\OrderShipping;
-use zipMoney\Model\CheckoutOrder;
-use zipMoney\ApiException;
+use \zipMoney\Model\CheckoutConfiguration;
+use \zipMoney\Model\CreateCheckoutRequest;
+use \zipMoney\Model\Shopper;
+use \zipMoney\Model\OrderShipping;
+use \zipMoney\Model\CheckoutOrder;
+use \zipMoney\ApiException;
 
 class WC_Zipmoney_Payment_Gateway_API_Request_Checkout extends WC_Zipmoney_Payment_Gateway_API_Abstract
 {
+    private $api_instance;
+
+    public function __construct(WC_Zipmoney_Payment_Gateway $WC_Zipmoney_Payment_Gateway, $api_instance)
+    {
+        parent::__construct($WC_Zipmoney_Payment_Gateway);
+
+        $this->api_instance = $api_instance;
+    }
 
     /**
      * Create checkout to API
@@ -27,10 +34,8 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Checkout extends WC_Zipmoney_Payme
         WC_Zipmoney_Payment_Gateway_Util::log('Sending checkout request to API', WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_INFO);
         WC_Zipmoney_Payment_Gateway_Util::log($body, WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG);
 
-        $api_instance = new CheckoutsApi();
-
         try {
-            $checkout = $api_instance->checkoutsCreate($body);
+            $checkout = $this->api_instance->checkoutsCreate($body);
 
             //log the checkout information
             WC_Zipmoney_Payment_Gateway_Util::log('Return from checkout API', WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_INFO);

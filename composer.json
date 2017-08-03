@@ -1,7 +1,12 @@
 {
   "name": "zipmoney/woocommerce-zipmoneypayment-apiv2",
   "require-dev": {
-    "zipMoney/zipMoney-MerchantApi-php": "dev-master"
+    "zipMoney/zipMoney-MerchantApi-php": "dev-master",
+    "phpunit/phpunit": "4.1.x-dev",
+    "phing/phing": "~2.11@dev",
+    "composer/composer": "~1.0@dev",
+    "wp-cli/wp-cli" : "~0.21",
+    "webgig/wc-setup" : "master"
   },
   "minimum-stability": "dev",
   "autoload": {
@@ -36,6 +41,18 @@
           "url": "https://github.com/zipmoney/zipMoney-MerchantApi-php",
           "type": "git",
           "reference": "master"
+        }
+      }
+    },
+    {
+      "type":"package",
+      "package": {
+        "name": "webgig/wc-setup",
+        "version":"master",
+        "source": {
+          "url": "https://github.com/webgig/wc-setup.git",
+          "type": "git",
+          "reference":"master"
         }
       }
     }
