@@ -1,0 +1,30 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
+    ],
+    "content-hash": "c7b124ac9399537ea2a0420dc0cac142",
+    "packages": [],
+    "packages-dev": [
+        {
+            "name": "zipMoney/zipMoney-MerchantApi-php",
+            "version": "dev-feature/api",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/zipmoney/zipMoney-MerchantApi-php",
+                "reference": "feature/api"
+            },
+            "type": "library"
+        }
+    ],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": {
+        "zipmoney/zipmoney-merchantapi-php": 20
+    },
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}

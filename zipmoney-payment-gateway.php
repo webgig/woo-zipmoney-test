@@ -41,6 +41,9 @@ function add_zipmoney_gateway_class($methods)
  */
 function run_zipmoney_payment_gateway()
 {
+    //Include the vendor repositories
+    require_once plugin_dir_path(__FILE__) . 'vendor/autoload.php';
+
     /**
      * Include the core class responsible for loading all necessary components of the plugin.
      */

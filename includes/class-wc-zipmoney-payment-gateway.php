@@ -15,6 +15,7 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
 
     public $WC_Zipmoney_Payment_Gateway_Config;
     public $WC_Zipmoney_Payment_Gateway_Widget;
+    public $WC_Zipmoney_Payment_Gateway_Api_Request;
 
     public function __construct()
     {
@@ -33,6 +34,9 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
      */
     private function _init_hooks()
     {
+        //have some checking
+        add_action('admin_notices', array($this, 'check_requirement'));
+
         //save admin options
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 
@@ -44,6 +48,8 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wc-zipmoney-payment-gateway-config.php';
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wc-zipmoney-payment-gateway-widget.php';
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wc-zipmoney-payment-gateway-util.php';
+
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/api/class-wc-zipmoney-payment-gateway-api-request.php';
     }
 
     /**
@@ -88,6 +94,7 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
         $this->WC_Zipmoney_Payment_Gateway_Config = new WC_Zipmoney_Payment_Gateway_Config($this);
         $this->WC_Zipmoney_Payment_Gateway_Widget = new WC_Zipmoney_Payment_Gateway_Widget($this);
 
+
         //check the logger is enable or not
         WC_Zipmoney_Payment_Gateway_Util::$config_log_level =
             $this->WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_LOGGING_LEVEL);
@@ -96,15 +103,55 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
         self::_init_hooks();
     }
 
+    /**
+     * Check the environment meet the minimum requirement
+     */
+    public function check_requirement()
+    {
+        if($this->WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_ENABLED) == false) {
+            return;
+        }
+
+        // PHP Version
+        if (version_compare(phpversion(), '5.2.1', '<')) {
+            echo '<div class="error"><p>' . sprintf(__('ZipMoney Error: ZipMoney requires PHP 5.3 and above. You are using version %s.', 'woocommerce'), phpversion()) . '</p></div>';
+        } // Show message if enabled and FORCE SSL is disabled and WordpressHTTPS plugin is not detected
+        elseif ('no' == get_option('woocommerce_force_ssl_checkout') && !class_exists('WordPressHTTPS')) {
+            echo '<div class="error"><p>' . sprintf(__('WARN: ZipMoney is enabled, but the <a href="%s">force SSL option</a> is disabled; your checkout may not be secure! Please enable SSL and ensure your server has a valid SSL certificate - ZipMoney will only work in sandbox mode.', 'woocommerce'), admin_url('admin.php?page=wc-settings&tab=checkout')) . '</p></div>';
+        }
+    }
+
+    /**
+     * Process payment after the order is created
+     *
+     * @param int $order_id
+     * @return array|null
+     */
     public function process_payment($order_id)
     {
         $order = new WC_Order($order_id);
 
         WC_Zipmoney_Payment_Gateway_Util::log('process payment');
-        WC_Zipmoney_Payment_Gateway_Util::log(print_r($order, true));
 
-        return array('result' => 'success',
-            'redirect' => 'http://www.google.com.au');
+        $this->WC_Zipmoney_Payment_Gateway_Config = new WC_Zipmoney_Payment_Gateway_Config($this);
+        $this->WC_Zipmoney_Payment_Gateway_Api_Request = new WC_Zipmoney_Payment_Gateway_Api_Request($this);
+
+        try {
+            $checkout_response = $this->WC_Zipmoney_Payment_Gateway_Api_Request->checkout(
+                $order,
+                $this->get_return_url($order),
+                $this->WC_Zipmoney_Payment_Gateway_Config->get_merchant_public_key()
+            );
+
+            return array(
+                'result' => 'success',
+                'redirect' => $checkout_response->getUri()
+            );
+        } catch (Exception $exception) {
+            wc_add_notice(__('Payment error:', 'woothemes') . $exception->getMessage(), 'error');
+            return null;
+        }
+
     }
 
 }
