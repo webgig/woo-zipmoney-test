@@ -279,7 +279,7 @@ class WC_Zipmoney_Payment_Gateway_Util
             }
         }
 
-        $ship_to_different_address = empty($customer_details['ship_to_different_address']);
+        $ship_to_different_address = empty($customer_details['ship_to_different_address']) ? false : true;
 
         //The address keys used for iterate the shipping and billing address
         $address_keys = array(
