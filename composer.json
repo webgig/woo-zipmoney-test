@@ -1,0 +1,11 @@
+{
+  "require": {
+    "zipMoney/zipMoney-MerchantApi-php": "master"
+  },
+  "repositories": [
+    {
+      "type": "vcs",
+      "url":  "git@github.com:zipMoney/zipMoney-MerchantApi-php.git"
+    }
+  ]
+}
