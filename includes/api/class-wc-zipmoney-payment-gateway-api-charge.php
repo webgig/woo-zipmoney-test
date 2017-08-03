@@ -37,7 +37,7 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment
             );
 
             //Call the API
-            $refund = $api_instance->refundsCreate($body);
+            $refund = $api_instance->refundsCreate($body, WC_Zipmoney_Payment_Gateway_Util::get_uuid());
 
             WC_Zipmoney_Payment_Gateway_Util::log($refund);
 
@@ -112,7 +112,7 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment
                 throw new Exception('The order status is not in Authorized status');
             }
 
-            $charge = $api_instance->chargesCancel($charge_id);
+            $charge = $api_instance->chargesCancel($charge_id, WC_Zipmoney_Payment_Gateway_Util::get_uuid());
 
             WC_Zipmoney_Payment_Gateway_Util::log($charge);
 
@@ -171,7 +171,7 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment
                 array('amount' => $order->get_total())
             );
 
-            $charge = $api_instance->chargesCapture($charge_id, $body);
+            $charge = $api_instance->chargesCapture($charge_id, $body, WC_Zipmoney_Payment_Gateway_Util::get_uuid());
 
             WC_Zipmoney_Payment_Gateway_Util::log($charge);
 
@@ -233,7 +233,7 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment
                 update_post_meta($order->id, '_customer_user', $WC_Session->get('user_id'));
             }
 
-            $charge = $api_instance->chargesCreate($body);
+            $charge = $api_instance->chargesCreate($body, WC_Zipmoney_Payment_Gateway_Util::get_uuid());
             //log the charge information
             WC_Zipmoney_Payment_Gateway_Util::log($charge, WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG);
             

@@ -42,8 +42,45 @@ class WC_Zipmoney_Payment_Gateway_Widget
 
         //Add the authorised status for payment complete
         add_filter( 'woocommerce_valid_order_statuses_for_payment_complete', array($this, 'filter_add_authorize_order_status_for_payment_complete'));
+
+        //add the payment gateway hook to order total
+        add_filter( 'woocommerce_available_payment_gateways', array($this, 'process_available_payment_gateways_with_order_threshold'));
     }
 
+    public function process_available_payment_gateways_with_order_threshold($gateways)
+    {
+        if (isset($gateways[$this->WC_Zipmoney_Payment_Gateway->id]) == false) {
+            //if the zipmoney payment is not active, then we won't process anything
+            return $gateways;
+        }
+
+        WC_Zipmoney_Payment_Gateway_Util::log(WC()->cart->total);
+
+        if(WC()->cart->total >= $this->WC_Zipmoney_Payment_Gateway->get_option(WC_Zipmoney_Payment_Gateway_Config::CONFIG_ORDER_THRESHOLD_MIN_TOTAL) &&
+            WC()->cart->total <= $this->WC_Zipmoney_Payment_Gateway->get_option(WC_Zipmoney_Payment_Gateway_Config::CONFIG_ORDER_THRESHOLD_MAX_TOTAL)
+        ){
+            //if the cart total hasn't exceeded the threshold, then we won't trigger anything
+            return $gateways;
+        }
+
+        //otherwise, we will do something by config
+        if ($this->WC_Zipmoney_Payment_Gateway->get_option(WC_Zipmoney_Payment_Gateway_Config::CONFIG_ORDER_THRESHOLD_IF_EXCEED) ==
+            WC_Zipmoney_Payment_Gateway_Config::ORDER_THRESHOLD_ACTION_HIDE
+        ) {
+            //hide the payment gateway
+            unset($gateways[$this->WC_Zipmoney_Payment_Gateway->id]);
+        }
+
+        return $gateways;
+    }
+
+    /**
+     * Added the authorize status for payment complete
+     *
+     * @param $statuses
+     * @param $instance
+     * @return array
+     */
     public function filter_add_authorize_order_status_for_payment_complete($statuses, $instance)
     {
         $statuses[] = str_replace('wc-', '', WC_Zipmoney_Payment_Gateway_Config::ZIP_ORDER_STATUS_AUTHORIZED_KEY);
@@ -302,7 +339,20 @@ class WC_Zipmoney_Payment_Gateway_Widget
             return $description;
         }
 
-        $html = null;
+        if(WC()->cart->total < $this->WC_Zipmoney_Payment_Gateway->get_option(WC_Zipmoney_Payment_Gateway_Config::CONFIG_ORDER_THRESHOLD_MIN_TOTAL) ||
+            WC()->cart->total > $this->WC_Zipmoney_Payment_Gateway->get_option(WC_Zipmoney_Payment_Gateway_Config::CONFIG_ORDER_THRESHOLD_MAX_TOTAL)
+        ){
+            //get the format message
+            $message = $this->WC_Zipmoney_Payment_Gateway->get_option(WC_Zipmoney_Payment_Gateway_Config::CONFIG_ORDER_THRESHOLD_MESSAGE);
+
+            if(stripos($message, '%d') == false){
+                $description .= '<p class="warning">' . $message . '</p>';
+            } else {
+                $max_threshold = $this->WC_Zipmoney_Payment_Gateway->get_option(WC_Zipmoney_Payment_Gateway_Config::CONFIG_ORDER_THRESHOLD_MAX_TOTAL);
+                $description .= '<p class="warning">' . sprintf($message, $max_threshold) . '</p>';
+            }
+
+        }
 
         return $description . ' <a  id="zipmoney-learn-more" class="zip-hover"  zm-widget="popup"  zm-popup-asset="termsdialog">Learn More</a>
     <script>if(window.$zmJs!==undefined) window.$zmJs._collectWidgetsEl(window.$zmJs);</script>';

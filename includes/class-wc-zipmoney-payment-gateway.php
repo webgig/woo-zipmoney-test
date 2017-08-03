@@ -166,8 +166,6 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
     {
         $query_vars = $wp->query_vars;
 
-        WC_Zipmoney_Payment_Gateway_Util::log('Query vars:' . print_r($query_vars, true));
-
         if (isset($query_vars['p']) == false || $query_vars['p'] != "zipmoneypayment") {
             return false;
         }
@@ -175,6 +173,8 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
         if (isset($query_vars['route']) == false) {
             return false;
         }
+
+        WC_Zipmoney_Payment_Gateway_Util::log('Query vars:' . print_r($query_vars, true));
 
         switch ($query_vars['route']) {
             case 'checkout':

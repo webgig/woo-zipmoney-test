@@ -50,3 +50,13 @@ jQuery('#woocommerce_zipmoney_is_express').change(function () {
     }
 
 }).change();
+
+jQuery('#woocommerce_zipmoney_order_threshold_if_exceed').change(function () {
+    var order_threshold_message = jQuery('#woocommerce_zipmoney_order_threshold_message').closest('tr');
+
+    if (jQuery(this).val() == 'order_threshold_hide') {
+        order_threshold_message.hide();
+    } else {
+        order_threshold_message.show();
+    }
+}).change();

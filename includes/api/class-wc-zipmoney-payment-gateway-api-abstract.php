@@ -109,12 +109,15 @@ class WC_Zipmoney_Payment_Gateway_API_Abstract {
 
         foreach ($WC_Session->get('cart', array()) as $id => $item) {
             $product = new WC_Product($item['product_id']);
+
+            $item_quantity = intval($item['quantity']);
+
             $order_item_data = array(
                 'name' => $product->get_title(),
-                'amount' => floatval($item['line_subtotal']) + floatval($item['line_subtotal_tax']),
+                'amount' => (floatval($item['line_subtotal']) + floatval($item['line_subtotal_tax'])) / $item_quantity,
                 'reference' => $product->get_sku(),
                 'description' => $product->post->post_excerpt,
-                'quantity' => intval($item['quantity']),
+                'quantity' => $item_quantity,
                 'type' => 'sku',
                 'item_uri' => $product->get_permalink(),
                 'product_code' => strval($product->get_id())
@@ -211,40 +214,5 @@ class WC_Zipmoney_Payment_Gateway_API_Abstract {
         );
     }
 
-
-
-    /**
-     * Get the billing info array by different build-in methods
-     *
-     * @param WC_Order $order
-     * @param string $address_type => 'billing' or 'shipping'
-     * @return array|bool   =>  array(
-     *      'first_name' => billing_first_name,
-     *      'last_name'  => billing_last_name,
-     *      'address_1'  => billing_address_1,
-     *      'address_2'  => billing_address_2,
-     *      'city'       => billing_city,
-     *      'state'      => billing_state,
-     *      'postcode'   => billing_postcode,
-     *      'country'    => billing_country,
-     *      'email'      => billing_email,
-     *      'phone'      => billing_phone,
-     *  )
-     */
-    protected function _get_address_array(WC_Order $order, $address_type)
-    {
-        //Try to get the billing address with different methods
-        if (method_exists($order, 'get_address')) {
-            return $order->get_address($address_type);
-        } else if (method_exists($order, 'get_' . $address_type . '_address')) {
-            $get_method = 'get_' . $address_type . '_address';
-            return explode(', ', $order->$get_method());
-        } else if (method_exists($order, 'get_formatted_' . $address_type . '_address')) {
-            $get_method = 'get_formatted_' . $address_type . '_address';
-            return explode(', ', $order->$get_method());
-        } else {
-            return false;
-        }
-    }
 
 }

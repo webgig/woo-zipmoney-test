@@ -44,6 +44,14 @@ class WC_Zipmoney_Payment_Gateway_Config
     const CONFIG_DISPLAY_BANNER_CART = 'display_banner_cart';
     const CONFIG_DISPLAY_TAGLINE_PRODUCT_PAGE = 'display_tagline_product_page';
     const CONFIG_DISPLAY_TAGLINE_CART = 'display_tagline_cart';
+    const CONFIG_ORDER_THRESHOLD_MIN_TOTAL = 'order_threshold_min_total';
+    const CONFIG_ORDER_THRESHOLD_MAX_TOTAL = 'order_threshold_max_total';
+    const CONFIG_ORDER_THRESHOLD_IF_EXCEED = 'order_threshold_if_exceed';
+    const CONFIG_ORDER_THRESHOLD_MESSAGE = 'order_threshold_message';
+
+    //order threshold if exceed
+    const ORDER_THRESHOLD_ACTION_DISPLAY_NOTICE = 'order_threshold_display_notice';
+    const ORDER_THRESHOLD_ACTION_HIDE = 'order_threshold_hide';
 
     const SINGLE_CONFIG_API_KEY = '_api_hash';
     const SINGLE_CONFIG_API_SETTINGS = '_api_settings';
@@ -162,6 +170,34 @@ class WC_Zipmoney_Payment_Gateway_Config
                 'type' => 'checkbox',
                 'description' => __('In-context checkout flow without leaving the store. In order for this to work on product and cart pages, express checkout has to be turned on for those pages.', 'woocommerce'),
                 'default' => 'no'
+            ),
+            self::CONFIG_ORDER_THRESHOLD_MIN_TOTAL => array(
+                'title' => __('Minimum Order Total', 'woocommerce'),
+                'type' => 'text',
+                'desc_tip' => 'The minimum order price value',
+                'default' => 1
+            ),
+            self::CONFIG_ORDER_THRESHOLD_MAX_TOTAL => array(
+                'title' => __('Maximum Order Total', 'woocommerce'),
+                'type' => 'text',
+                'desc_tip' => 'The maximum order price value',
+                'default' => 1000
+            ),
+            self::CONFIG_ORDER_THRESHOLD_IF_EXCEED => array(
+                'title' => __('When order total is outside the threshold', 'woocommerce'),
+                'desc_tip' => 'The action to take when the order total is outside the threshold',
+                'type' => 'select',
+                'default' => self::ORDER_THRESHOLD_ACTION_HIDE,
+                'options' => array(
+                    self::ORDER_THRESHOLD_ACTION_DISPLAY_NOTICE => 'Display Notice',
+                    self::ORDER_THRESHOLD_ACTION_HIDE => 'Hide'
+                )
+            ),
+            self::CONFIG_ORDER_THRESHOLD_MESSAGE => array(
+                'title' => __('Order Total Threshold Message', 'woocommerce'),
+                'type' => 'textarea',
+                'desc_tip' => 'The message which will be shown as alert message to customer',
+                'default' => 'Available on orders up to $%d. Don\'t worry if its a little higher, you can always pay a deposit.'
             ),
             self::CONFIG_DISPLAY_WIDGET => array(
                 'title' => __('Marketing Widgets', 'woocommerce'),
