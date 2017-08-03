@@ -94,9 +94,9 @@
         <exec command="${bin.phpunit}" passthru="true" checkreturn="true" />
     </target>
 
-
     <target name="create_package">
-        <exec command="zip -r ${env.packagename}-v${env.branch}.zip ./assets/* ./includes/* ./vendor/autoload.php ./vendor/composer/*.php ./*.php ./README.txt ./LICENSE.txt" passthru="true" checkreturn="true" />
+        <exec command="composer install --no-dev" passthru="true" checkreturn="true" />
+        <exec command="zip -r ${env.packagename}-v${env.branch}.zip ./assets/* ./includes/* ./vendor/autoload.php ./vendor/composer/*.php ./vendor/zipmoney/**/* ./*.php ./README.txt ./LICENSE.txt" passthru="true" checkreturn="true" />
     </target>
 
     <target name="publish_to_s3">
