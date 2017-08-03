@@ -206,7 +206,7 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
      */
     public function process_refund($order_id, $amount = null, $reason = '')
     {
-        WC_Zipmoney_Payment_Gateway_Util::log('process refund');
+        WC_Zipmoney_Payment_Gateway_Util::log('process refund', WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_INFO);
 
         $order = new WC_Order($order_id);
 
@@ -216,7 +216,7 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
         $amount = empty($amount) ? 0 : $amount;
         $reason = empty($reason) ? 'No reason' : $reason;
 
-        WC_Zipmoney_Payment_Gateway_Util::log('refund finished');
+        WC_Zipmoney_Payment_Gateway_Util::log('refund finished', WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_INFO);
 
         return $WC_Zipmoney_Payment_Gateway_API_Request_Charge->refund_order_charge(
             $order,
@@ -234,30 +234,32 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
      */
     private function _handle_charge_request($action_type, $data)
     {
-        WC_Zipmoney_Payment_Gateway_Util::log('Charge called');
+        WC_Zipmoney_Payment_Gateway_Util::log('Charge process started');
 
         //process the charge process
         $charge_controller = new WC_Zip_Controller_Charge_Controller($this);
 
+        //store the referrer
+        $referrer = $_SERVER['HTTP_REFERER'];
+
         switch ($action_type){
             case 'create':
-                $order = $charge_controller->create_charge($_GET);
-                if(empty($order)){
-                    wp_redirect(get_site_url() . '/zipmoneypayment/error');
+                $result = $charge_controller->create_charge($_GET);
+                if ($result['result'] == true) {
+                    wp_redirect($this->get_return_url($result['order']));
                 } else {
-                    wp_redirect($this->get_return_url($order));
+                    WC_Zipmoney_Payment_Gateway_Util::show_notification_page($result['title'], $result['content']);
+                    exit;
                 }
                 break;
             case 'capture':
-                $referer = $_SERVER['HTTP_REFERER'];
                 $charge_controller->capture_charge($_POST['zip_order_id']);
-                wp_redirect($referer);
+                wp_redirect($referrer);
                 exit;
                 break;
             case 'cancel':
-                $referer = $_SERVER['HTTP_REFERER'];
                 $charge_controller->cancel_charge($_POST['zip_order_id']);
-                wp_redirect($referer);
+                wp_redirect($referrer);
                 exit;
                 break;
         }

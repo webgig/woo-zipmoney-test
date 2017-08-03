@@ -155,7 +155,19 @@ class WC_Zipmoney_Payment_Gateway_Util
      */
     public static function show_error_page()
     {
-        include plugin_dir_path(dirname(__FILE__)) . 'includes/view/frontend/error.php';
+        include plugin_dir_path(dirname(__FILE__)) . 'includes/view/frontend/error_page.php';
+    }
+
+    /**
+     * Show the notification page
+     *
+     * @param $title
+     * @param $content_title
+     * @param $content_details
+     */
+    public static function show_notification_page($title, $content)
+    {
+        include plugin_dir_path(dirname(__FILE__)) . 'includes/view/frontend/notification_page.php';
     }
 
     /**

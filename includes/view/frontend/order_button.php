@@ -18,6 +18,5 @@
                 this.prop("disabled",true);
             }
         });
-
     });
 </script>

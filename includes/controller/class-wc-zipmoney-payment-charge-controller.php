@@ -5,34 +5,57 @@ class WC_Zip_Controller_Charge_Controller extends WC_Zip_Controller_Abstract_Con
     /**
      * Create a charge
      *
-     * @param $options
-     * @return bool|null|WC_Order|WP_Error
+     * @param $options => array(
+     *      'checkoutId' => '',
+     *      'result' => 'approved'
+     * )
+     * @return array
      */
     public function create_charge($options)
     {
         //get session from option table by checkout id
         $WC_Session = get_option($options['checkoutId'], false);
 
+        $result = array('result' => false);
+
         if (empty($WC_Session)) {
-            return false;
+            WC_Zipmoney_Payment_Gateway_Util::log('Empty session record with checkoutId: ' . $options['checkoutId'], WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG);
+            return $result;
         }
 
-        if ($options['result'] == 'approved') {
-            //if it is approved, then we will create a charge
-            $WC_Zipmoney_Payment_Gateway_API_Request_Charge = new WC_Zipmoney_Payment_Gateway_API_Request_Charge($this->WC_Zipmoney_Payment_Gateway);
+        WC_Zipmoney_Payment_Gateway_Util::log(sprintf('CheckoutId: %s, Result: %s', $options['checkoutId'], $options['result']), WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG);
 
-            $order = $WC_Zipmoney_Payment_Gateway_API_Request_Charge->create_charge(
-                $WC_Session,
-                $this->WC_Zipmoney_Payment_Gateway_Config->get_merchant_public_key(),
-                $options
-            );
+        switch ($options['result']){
+            case 'approved':
+                //if it is approved, then we will create a charge
+                $WC_Zipmoney_Payment_Gateway_API_Request_Charge = new WC_Zipmoney_Payment_Gateway_API_Request_Charge($this->WC_Zipmoney_Payment_Gateway);
 
-            WC_Zipmoney_Payment_Gateway_Util::log($order, WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG);
+                $order = $WC_Zipmoney_Payment_Gateway_API_Request_Charge->create_charge(
+                    $WC_Session,
+                    $this->WC_Zipmoney_Payment_Gateway_Config->get_merchant_public_key(),
+                    $options
+                );
 
-            return $order;
+                WC_Zipmoney_Payment_Gateway_Util::log($order, WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG);
+
+                $result['result'] = true;
+                $result['order'] = $order;
+                break;
+            case 'referred':
+                $result['title'] = 'The payment is in referred state';
+                $result['content'] = 'Your application is currently under review by zipMoney and will be processed very shortly. You can contact the customer care at customercare@zipmoney.com.au for any enquiries.';
+                break;
+            case 'declined':
+                $result['title'] = 'The checkout is declined';
+                $result['content'] = 'Your application has been declined by zipMoney. Please contact zipMoney for further information.';
+                break;
+            case 'cancelled':
+                $result['title'] = 'The checkout has been cancelled';
+                $result['content'] = 'The checkout has bee cancelled.';
+                break;
         }
 
-        return false;
+        return $result;
     }
 
     /**
