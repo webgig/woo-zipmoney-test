@@ -2,6 +2,97 @@
 class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment_Gateway_API_Abstract
 {
 
+    /**
+     * Create refund by order charge
+     *
+     * @param WC_Order $order
+     * @param $api_key
+     * @param int $amount
+     * @param string $reason
+     * @return bool
+     */
+    public function refund_order_charge(WC_Order $order, $api_key, $amount = 0, $reason = '')
+    {
+        parent::set_api_key($api_key);
+
+        $api_instance = new \zipMoney\Client\Api\RefundsApi();
+
+        try {
+            $charge_id = get_post_meta($order->id, WC_Zipmoney_Payment_Gateway_Config::META_CHARGE_ID, true);
+
+            if (empty($charge_id)) {
+                //if the charge id is empty, then we won't process the charge anymore
+                throw new Exception('Empty charge id');
+            }
+            if($amount <= 0){
+                throw new Exception('The amount should greater than 0');
+            }
+
+            $body = new \zipMoney\Model\CreateRefundRequest(
+                array(
+                    'charge_id' => $charge_id,
+                    'reason' => $reason,
+                    'amount' => $amount
+                )
+            );
+
+            //Call the API
+            $refund = $api_instance->refundsCreate($body);
+
+            WC_Zipmoney_Payment_Gateway_Util::log($refund);
+
+            //update the order info
+            self::_update_order_refund($order, $refund);
+
+            return true;
+        } catch (\zipMoney\ApiException $exception) {
+            WC_Zipmoney_Payment_Gateway_Util::log($exception->getCode() . $exception->getMessage());
+            WC_Zipmoney_Payment_Gateway_Util::log($exception->getResponseBody());
+
+            WC_Zipmoney_Payment_Gateway_Util::add_admin_notice($exception->getMessage());
+            WC_Zipmoney_Payment_Gateway_Util::add_admin_notice(print_r($exception->getResponseBody(), true));
+        } catch (Exception $exception) {
+            WC_Zipmoney_Payment_Gateway_Util::log($exception->getCode() . $exception->getMessage());
+
+            WC_Zipmoney_Payment_Gateway_Util::add_admin_notice($exception->getMessage());
+        }
+
+        return false;
+    }
+
+    /**
+     * Update the order status
+     *
+     * @param WC_Order $order
+     * @param \zipMoney\Model\Refund $refund
+     * @throws ZipMoney_Exception
+     */
+    private function _update_order_refund(WC_Order $order, \zipMoney\Model\Refund $refund)
+    {
+        $order_remain_total = wc_format_decimal($order->get_total() - $order->get_total_refunded());
+
+        //write the order note
+        $order->add_order_note(sprintf('The ZipMoney refund has been successfully performed. [Charge id:%s, Refund id:%s, Amount: %s]', $refund->getChargeId(), $refund->getId(), $refund->getAmount()));
+
+        if (wc_format_decimal($refund->getAmount()) == $order_remain_total) {
+            //if the order is fully refunded
+            $order->update_status('wc-refunded');
+        }
+        // Clear transients
+        wc_delete_shop_order_transients($order->id);
+
+        //log the message
+        WC_Zipmoney_Payment_Gateway_Util::log(sprintf('ZipMoney refund success! [Order id: %s, Refund id:%s]', $order->id, $refund->getId()));
+    }
+
+
+    /**
+     * Cancel an authorized charge
+     *
+     * @param WC_Order $order
+     * @param $api_key
+     * @return bool
+     */
     public function cancel_order_charge(WC_Order $order, $api_key)
     {
         parent::set_api_key($api_key);

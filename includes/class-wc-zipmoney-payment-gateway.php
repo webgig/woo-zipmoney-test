@@ -11,6 +11,8 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
     public $title = 'Pay Later with zipPay';
     public $description = 'No interest ever - get a decision in seconds!';
 
+    public $supports = array('products', 'refunds');
+
     public $form_fields;
 
     public $WC_Zipmoney_Payment_Gateway_Config;
@@ -194,6 +196,42 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
         exit;
     }
 
+    /**
+     *
+     *
+     * @param int $order_id
+     * @param null $amount
+     * @param string $reason
+     * @return bool
+     */
+    public function process_refund($order_id, $amount = null, $reason = '')
+    {
+        WC_Zipmoney_Payment_Gateway_Util::log('process refund');
+
+        $order = new WC_Order($order_id);
+
+        $this->WC_Zipmoney_Payment_Gateway_Config = new WC_Zipmoney_Payment_Gateway_Config($this);
+        $WC_Zipmoney_Payment_Gateway_API_Request_Charge = new WC_Zipmoney_Payment_Gateway_API_Request_Charge($this);
+
+        $amount = empty($amount) ? 0 : $amount;
+        $reason = empty($reason) ? 'No reason' : $reason;
+
+        WC_Zipmoney_Payment_Gateway_Util::log('refund finished');
+
+        return $WC_Zipmoney_Payment_Gateway_API_Request_Charge->refund_order_charge(
+            $order,
+            $this->WC_Zipmoney_Payment_Gateway_Config->get_merchant_public_key(),
+            $amount,
+            $reason
+        );
+    }
+
+    /**
+     * handle the charge request by custom url call
+     *
+     * @param $action_type
+     * @param $data
+     */
     private function _handle_charge_request($action_type, $data)
     {
         WC_Zipmoney_Payment_Gateway_Util::log('Charge called');

@@ -2,17 +2,22 @@
 
 class WC_Zip_Controller_Charge_Controller extends WC_Zip_Controller_Abstract_Controller
 {
-
+    /**
+     * Create a charge
+     *
+     * @param $options
+     * @return bool|null|WC_Order|WP_Error
+     */
     public function create_charge($options)
     {
         //get session from option table by checkout id
         $WC_Session = get_option($options['checkoutId'], false);
 
-        if(empty($WC_Session)){
+        if (empty($WC_Session)) {
             return false;
         }
 
-        if($options['result'] == 'approved'){
+        if ($options['result'] == 'approved') {
             //if it is approved, then we will create a charge
             $WC_Zipmoney_Payment_Gateway_API_Request_Charge = new WC_Zipmoney_Payment_Gateway_API_Request_Charge($this->WC_Zipmoney_Payment_Gateway);
 
@@ -30,11 +35,17 @@ class WC_Zip_Controller_Charge_Controller extends WC_Zip_Controller_Abstract_Con
         return false;
     }
 
+    /**
+     * Cancel an authorized charge
+     *
+     * @param $order_id
+     * @return bool
+     */
     public function cancel_charge($order_id)
     {
         $order = new WC_Order($order_id);
 
-        if(empty($order)){
+        if (empty($order)) {
             //if it can't find the order
             wc_add_notice(__('Unable to find order by id: ' . $order_id, 'woothemes'), 'error');
             return false;
@@ -54,6 +65,13 @@ class WC_Zip_Controller_Charge_Controller extends WC_Zip_Controller_Abstract_Con
         }
     }
 
+
+    /**
+     * Capture an authorized charge
+     *
+     * @param $order_id
+     * @return bool
+     */
     public function capture_charge($order_id)
     {
         $order = new WC_Order($order_id);
