@@ -95,6 +95,22 @@
     </target>
 
 
+    <target name="create_package">
+        <exec command="zip -r ${env.packagename}-v${env.branch}.zip ./assets/* ./includes/* ./vendor/autoload.php ./vendor/composer/*.php ./*.php ./README.txt ./LICENSE.txt" passthru="true" checkreturn="true" />
+    </target>
+
+    <target name="publish_to_s3">
+        <exec command="aws s3 cp ${env.packagename}-v${env.branch}.zip s3://zm-software-assets/Plugins/Woocommerce/${env.packagename}-v${env.branch}.zip  --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers" passthru="true" checkreturn="true" />
+    </target> 
+
+    <target name="add_to_svn">
+        <exec command="cp --parents ./assets/**/* ./includes/*.php ./includes/zipmoney-api/ZipMoney.php ./includes/zipmoney-api/lib/*.php  ./includes/zipmoney-api/lib/**/*.php ./*.php ./README.txt ./LICENSE.txt ~/zipmoney-woocommerce-addon/trunk/" />
+        <exec command="cd ~/zipmoney-woocommerce-addon/  &amp;&amp;  svn stat" />
+        <exec command="cd ~/zipmoney-woocommerce-addon/  &amp;&amp;  svn ci -m '${env.branch}'" />
+        <exec command="cd ~/zipmoney-woocommerce-addon/  &amp;&amp;  svn cp trunk tags/${env.branch} " />
+        <exec command="cd ~/zipmoney-woocommerce-addon/  &amp;&amp;  svn ci -m 'Tagging version version ${env.branch}' " />    
+    </target>
+
     <target name="package" description="Package module into a wordpress plugin package">
         <propertyregex property="tagname" subject="${env.branch}" pattern="^(\*|\d+(\.\d+){0,2}(\.\*)?)$"  match="$1" casesensitive="false" defaultvalue="false"/>                
         <echo msg="${tagname}" />
@@ -102,7 +118,7 @@
             <ispropertytrue property="tagname" />
             <then>
                 <echo msg="Is a tag" />
-                <exec command="zip -r ${env.packagename}-v${env.branch}.zip ./assets/* ./includes/* ./vendor/autoload.php ./vendor/composer/*.php ./*.php ./README.txt ./LICENSE.txt" passthru="true" checkreturn="true" />
+                <phingcall target="create_package"/>
             </then>
             <else>
                 <echo msg="Is not a tag, so not creating a package" />
@@ -111,14 +127,14 @@
     </target>
 
 
-    <target name="deploy" description="Deploy to s3">
+    <target name="deploy_to_s3" description="Deploy to s3">
         <propertyregex property="tagname" subject="${env.branch}" pattern="^(\*|\d+(\.\d+){0,2}(\.\*)?)$"  match="$1" casesensitive="false" defaultvalue="false"/>                
         <echo msg="${tagname}" />
         <if>
             <ispropertytrue property="tagname" />
             <then>
                 <echo msg="Is a tag" />
-                <exec command="aws s3 cp ${env.packagename}-v${env.branch}.zip s3://zm-software-assets/Plugins/Woocommerce/${env.packagename}-v${env.branch}.zip  --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers" passthru="true" checkreturn="true" />
+                <phingcall target="publish_to_s3"/>
             </then>
             <else>
                 <echo msg="Is not a tag, so not deploying to s3" />
@@ -133,11 +149,7 @@
             <ispropertytrue property="tagname" />
             <then>
                 <echo msg="Is a tag" />
-                <exec command="cp --parents ./assets/**/* ./includes/*.php ./includes/zipmoney-api/ZipMoney.php ./includes/zipmoney-api/lib/*.php  ./includes/zipmoney-api/lib/**/*.php ./*.php ./README.txt ./LICENSE.txt ~/zipmoney-woocommerce-addon/trunk/" />
-                <exec command="cd ~/zipmoney-woocommerce-addon/  &amp;&amp;  svn stat" />
-                <exec command="cd ~/zipmoney-woocommerce-addon/  &amp;&amp;  svn ci -m '${env.branch}'" />
-                <exec command="cd ~/zipmoney-woocommerce-addon/  &amp;&amp;  svn cp trunk tags/${env.branch} " />
-                <exec command="cd ~/zipmoney-woocommerce-addon/  &amp;&amp;  svn ci -m 'Tagging version version ${env.branch}' " />
+                <phingcall target="add_to_svn"/>
             </then>
             <else>
                 <echo msg="Is not a tag, so not deploying to wordpress plugins directory" />
