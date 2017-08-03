@@ -141,7 +141,7 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Checkout extends WC_Zipmoney_Payme
      */
     private function _create_checkout_order(WC_Session $WC_Session)
     {
-        $chosen_shipping_rates = $WC_Session->get('chosen_shipping_methods');
+        $chosen_shipping_rates = $WC_Session->get('chosen_shipping_methods', array());
         $is_pickup = in_array('local_pickup', $chosen_shipping_rates);
 
         $order_shipping = new OrderShipping(
