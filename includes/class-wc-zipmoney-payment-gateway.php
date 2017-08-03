@@ -98,7 +98,13 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
 
     public function process_payment($order_id)
     {
-        return parent::process_payment($order_id);
+        $order = new WC_Order($order_id);
+
+        WC_Zipmoney_Payment_Gateway_Util::log('process payment');
+        WC_Zipmoney_Payment_Gateway_Util::log(print_r($order, true));
+
+        return array('result' => 'success',
+            'redirect' => 'http://www.google.com.au');
     }
 
 }
