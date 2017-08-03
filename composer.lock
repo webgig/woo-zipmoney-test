@@ -4,8 +4,57 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "6f110959417af94d46c2af1631a10784",
-    "packages": [],
+    "content-hash": "16460310c1f26e66c32b1228a1ffdbff",
+    "packages": [
+        {
+            "name": "zipmoney/merchantapi-php",
+            "version": "1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/zipMoney/merchantapi-php.git",
+                "reference": "1559d708d48c29af0a01868ec0c1bcbfae298ae3"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/zipMoney/merchantapi-php/zipball/1559d708d48c29af0a01868ec0c1bcbfae298ae3",
+                "reference": "1559d708d48c29af0a01868ec0c1bcbfae298ae3",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "ext-json": "*",
+                "php": ">=5.3"
+            },
+            "require-dev": {
+                "friendsofphp/php-cs-fixer": "~1.12",
+                "squizlabs/php_codesniffer": "~2.6"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "zipMoney\\": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "proprietary"
+            ],
+            "authors": [
+                {
+                    "name": "zipMoney Payments Pty Ltd",
+                    "homepage": "https://zipmoney.com.au"
+                }
+            ],
+            "homepage": "http://zipmoney.com.au",
+            "keywords": [
+                "api",
+                "php",
+                "sdk",
+                "swagger"
+            ],
+            "time": "2017-04-04T06:54:18+00:00"
+        }
+    ],
     "packages-dev": [
         {
             "name": "composer/ca-bundle",
@@ -64,7 +113,7 @@
                 "ssl",
                 "tls"
             ],
-            "time": "2017-03-06T11:59:08+00:00"
+            "time": "2017-03-06 11:59:08"
         },
         {
             "name": "composer/composer",
@@ -72,12 +121,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/composer.git",
-                "reference": "0d5ff633b5da378df379fc462877282633736a17"
+                "reference": "3642fe63b23c3fd5546f30bdddad6a4b5f8fc601"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/composer/zipball/0d5ff633b5da378df379fc462877282633736a17",
-                "reference": "0d5ff633b5da378df379fc462877282633736a17",
+                "url": "https://api.github.com/repos/composer/composer/zipball/3642fe63b23c3fd5546f30bdddad6a4b5f8fc601",
+                "reference": "3642fe63b23c3fd5546f30bdddad6a4b5f8fc601",
                 "shasum": ""
             },
             "require": {
@@ -141,7 +190,7 @@
                 "dependency",
                 "package"
             ],
-            "time": "2017-03-26T12:03:37+00:00"
+            "time": "2017-04-04T08:03:46+00:00"
         },
         {
             "name": "composer/semver",
@@ -203,7 +252,7 @@
                 "validation",
                 "versioning"
             ],
-            "time": "2017-02-17T21:53:13+00:00"
+            "time": "2017-02-17 21:53:13"
         },
         {
             "name": "composer/spdx-licenses",
@@ -211,12 +260,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/spdx-licenses.git",
-                "reference": "7fc8d83fc28dd5aa039d5b2a936a7ccf62dd4c51"
+                "reference": "2603a0d7ddc00a015deb576fa5297ca43dee6b1c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/spdx-licenses/zipball/7fc8d83fc28dd5aa039d5b2a936a7ccf62dd4c51",
-                "reference": "7fc8d83fc28dd5aa039d5b2a936a7ccf62dd4c51",
+                "url": "https://api.github.com/repos/composer/spdx-licenses/zipball/2603a0d7ddc00a015deb576fa5297ca43dee6b1c",
+                "reference": "2603a0d7ddc00a015deb576fa5297ca43dee6b1c",
                 "shasum": ""
             },
             "require": {
@@ -264,7 +313,7 @@
                 "spdx",
                 "validator"
             ],
-            "time": "2017-01-03T08:35:48+00:00"
+            "time": "2017-04-03 19:08:52"
         },
         {
             "name": "justinrainbow/json-schema",
@@ -331,7 +380,7 @@
                 "json",
                 "schema"
             ],
-            "time": "2017-03-22T22:43:35+00:00"
+            "time": "2017-03-22 22:43:35"
         },
         {
             "name": "mustache/mustache",
@@ -623,7 +672,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2015-10-06T15:47:00+00:00"
+            "time": "2015-10-06 15:47:00"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -758,7 +807,7 @@
             "keywords": [
                 "timer"
             ],
-            "time": "2017-03-07T15:42:04+00:00"
+            "time": "2017-03-07 15:42:04"
         },
         {
             "name": "phpunit/php-token-stream",
@@ -807,7 +856,7 @@
             "keywords": [
                 "tokenizer"
             ],
-            "time": "2017-03-07T08:21:50+00:00"
+            "time": "2017-03-07 08:21:50"
         },
         {
             "name": "phpunit/phpunit",
@@ -881,7 +930,7 @@
                 "testing",
                 "xunit"
             ],
-            "time": "2015-02-09T06:33:19+00:00"
+            "time": "2015-02-09 06:33:19"
         },
         {
             "name": "phpunit/phpunit-mock-objects",
@@ -985,7 +1034,7 @@
                 "psr",
                 "psr-3"
             ],
-            "time": "2016-10-10T12:19:37+00:00"
+            "time": "2016-10-10 12:19:37"
         },
         {
             "name": "ramsey/array_column",
@@ -1143,7 +1192,7 @@
                 "compare",
                 "equality"
             ],
-            "time": "2017-03-07T10:34:43+00:00"
+            "time": "2017-03-07 10:34:43"
         },
         {
             "name": "sebastian/diff",
@@ -1195,7 +1244,7 @@
             "keywords": [
                 "diff"
             ],
-            "time": "2017-03-07T07:26:53+00:00"
+            "time": "2017-03-07 07:26:53"
         },
         {
             "name": "sebastian/environment",
@@ -1245,7 +1294,7 @@
                 "environment",
                 "hhvm"
             ],
-            "time": "2017-02-28T08:18:59+00:00"
+            "time": "2017-02-28 08:18:59"
         },
         {
             "name": "sebastian/exporter",
@@ -1312,7 +1361,7 @@
                 "export",
                 "exporter"
             ],
-            "time": "2017-02-26T13:09:30+00:00"
+            "time": "2017-02-26 13:09:30"
         },
         {
             "name": "sebastian/recursion-context",
@@ -1365,7 +1414,7 @@
             ],
             "description": "Provides functionality to recursively process PHP variables",
             "homepage": "http://www.github.com/sebastianbergmann/recursion-context",
-            "time": "2016-10-03T07:41:43+00:00"
+            "time": "2016-10-03 07:41:43"
         },
         {
             "name": "sebastian/version",
@@ -1448,7 +1497,7 @@
                 "input",
                 "prompt"
             ],
-            "time": "2017-03-18T11:32:45+00:00"
+            "time": "2017-03-18 11:32:45"
         },
         {
             "name": "seld/jsonlint",
@@ -1541,7 +1590,7 @@
             "keywords": [
                 "phra"
             ],
-            "time": "2015-10-13T18:44:15+00:00"
+            "time": "2015-10-13 18:44:15"
         },
         {
             "name": "symfony/config",
@@ -1549,12 +1598,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/config.git",
-                "reference": "06ce6bb46c24963ec09323da45d0f4f85d3cecd2"
+                "reference": "35b7dfa089d7605eb1fdd46281b3070fb9f38750"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/config/zipball/06ce6bb46c24963ec09323da45d0f4f85d3cecd2",
-                "reference": "06ce6bb46c24963ec09323da45d0f4f85d3cecd2",
+                "url": "https://api.github.com/repos/symfony/config/zipball/35b7dfa089d7605eb1fdd46281b3070fb9f38750",
+                "reference": "35b7dfa089d7605eb1fdd46281b3070fb9f38750",
                 "shasum": ""
             },
             "require": {
@@ -1597,7 +1646,7 @@
             ],
             "description": "Symfony Config Component",
             "homepage": "https://symfony.com",
-            "time": "2017-03-01T18:13:50+00:00"
+            "time": "2017-04-04T15:24:26+00:00"
         },
         {
             "name": "symfony/console",
@@ -1605,12 +1654,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/console.git",
-                "reference": "3e0b0cb5d669a7d39dd85050910af6ee77e40e7e"
+                "reference": "86407ff20855a5eaa2a7219bd815e9c40a88633e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/console/zipball/3e0b0cb5d669a7d39dd85050910af6ee77e40e7e",
-                "reference": "3e0b0cb5d669a7d39dd85050910af6ee77e40e7e",
+                "url": "https://api.github.com/repos/symfony/console/zipball/86407ff20855a5eaa2a7219bd815e9c40a88633e",
+                "reference": "86407ff20855a5eaa2a7219bd815e9c40a88633e",
                 "shasum": ""
             },
             "require": {
@@ -1658,7 +1707,7 @@
             ],
             "description": "Symfony Console Component",
             "homepage": "https://symfony.com",
-            "time": "2017-03-27T14:49:15+00:00"
+            "time": "2017-04-03 20:37:06"
         },
         {
             "name": "symfony/debug",
@@ -1715,7 +1764,7 @@
             ],
             "description": "Symfony Debug Component",
             "homepage": "https://symfony.com",
-            "time": "2017-02-18T19:13:35+00:00"
+            "time": "2017-02-18 19:13:35"
         },
         {
             "name": "symfony/dependency-injection",
@@ -1723,12 +1772,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/dependency-injection.git",
-                "reference": "a5f3f1265731c33906a725c6f321cb93c2b49f67"
+                "reference": "14b9d8ae69ac4c74e8f05fee7e0a57039b99c81e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/dependency-injection/zipball/a5f3f1265731c33906a725c6f321cb93c2b49f67",
-                "reference": "a5f3f1265731c33906a725c6f321cb93c2b49f67",
+                "url": "https://api.github.com/repos/symfony/dependency-injection/zipball/14b9d8ae69ac4c74e8f05fee7e0a57039b99c81e",
+                "reference": "14b9d8ae69ac4c74e8f05fee7e0a57039b99c81e",
                 "shasum": ""
             },
             "require": {
@@ -1778,7 +1827,7 @@
             ],
             "description": "Symfony DependencyInjection Component",
             "homepage": "https://symfony.com",
-            "time": "2017-03-21T21:39:01+00:00"
+            "time": "2017-04-03 22:14:48"
         },
         {
             "name": "symfony/event-dispatcher",
@@ -1786,12 +1835,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/event-dispatcher.git",
-                "reference": "cd88acb5563c690bb02c21b5d7aa801af2520095"
+                "reference": "88b65f0ac25355090e524aba4ceb066025df8bd2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/cd88acb5563c690bb02c21b5d7aa801af2520095",
-                "reference": "cd88acb5563c690bb02c21b5d7aa801af2520095",
+                "url": "https://api.github.com/repos/symfony/event-dispatcher/zipball/88b65f0ac25355090e524aba4ceb066025df8bd2",
+                "reference": "88b65f0ac25355090e524aba4ceb066025df8bd2",
                 "shasum": ""
             },
             "require": {
@@ -1838,7 +1887,7 @@
             ],
             "description": "Symfony EventDispatcher Component",
             "homepage": "https://symfony.com",
-            "time": "2017-03-21T21:39:01+00:00"
+            "time": "2017-04-03 20:37:06"
         },
         {
             "name": "symfony/filesystem",
@@ -1887,7 +1936,7 @@
             ],
             "description": "Symfony Filesystem Component",
             "homepage": "https://symfony.com",
-            "time": "2017-03-26T15:40:40+00:00"
+            "time": "2017-03-26 15:40:40"
         },
         {
             "name": "symfony/finder",
@@ -1936,7 +1985,7 @@
             ],
             "description": "Symfony Finder Component",
             "homepage": "https://symfony.com",
-            "time": "2017-03-20T08:46:40+00:00"
+            "time": "2017-03-20 08:46:40"
         },
         {
             "name": "symfony/polyfill-mbstring",
@@ -1995,7 +2044,7 @@
                 "portable",
                 "shim"
             ],
-            "time": "2016-11-14T01:06:16+00:00"
+            "time": "2016-11-14 01:06:16"
         },
         {
             "name": "symfony/process",
@@ -2044,7 +2093,7 @@
             ],
             "description": "Symfony Process Component",
             "homepage": "https://symfony.com",
-            "time": "2017-03-04T12:20:59+00:00"
+            "time": "2017-03-04 12:20:59"
         },
         {
             "name": "symfony/translation",
@@ -2108,7 +2157,7 @@
             ],
             "description": "Symfony Translation Component",
             "homepage": "https://symfony.com",
-            "time": "2017-03-21T21:39:01+00:00"
+            "time": "2017-03-21 21:39:01"
         },
         {
             "name": "symfony/yaml",
@@ -2157,7 +2206,7 @@
             ],
             "description": "Symfony Yaml Component",
             "homepage": "https://symfony.com",
-            "time": "2017-03-20T09:41:44+00:00"
+            "time": "2017-03-20 09:41:44"
         },
         {
             "name": "webgig/wc-setup",
@@ -2167,7 +2216,8 @@
                 "url": "https://github.com/webgig/wc-setup.git",
                 "reference": "master"
             },
-            "type": "library"
+            "type": "library",
+            "time": "2017-01-17 05:32:16"
         },
         {
             "name": "wp-cli/php-cli-tools",
@@ -2285,23 +2335,11 @@
                 "wordpress"
             ],
             "time": "2016-10-25T15:14:00+00:00"
-        },
-        {
-            "name": "zipMoney/zipMoney-MerchantApi-php",
-            "version": "dev-master",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/zipmoney/zipMoney-MerchantApi-php",
-                "reference": "master"
-            },
-            "type": "library",
-            "time": "2017-03-23 23:12:04"
         }
     ],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "zipmoney/zipmoney-merchantapi-php": 20,
         "phpunit/phpunit": 20,
         "phing/phing": 20,
         "composer/composer": 20
