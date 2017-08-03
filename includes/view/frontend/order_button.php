@@ -10,7 +10,7 @@
                 Zip.Checkout.init({
                     redirect: <?php echo $is_iframe_checkout ? 0 : 1?>,
                     checkoutUri: '<?php echo WC_Zipmoney_Payment_Gateway_Util::get_checkout_endpoint_url();?>',
-                    completeUri: '<?php echo WC_Zipmoney_Payment_Gateway_Util::get_complete_endpoint_url()?>'
+                    redirectUri: '<?php echo WC_Zipmoney_Payment_Gateway_Util::get_complete_endpoint_url()?>'
                 });
 
                 e.preventDefault();
