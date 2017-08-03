@@ -56,10 +56,6 @@
             <not><isset property="db.pass"/></not>
             <then><fail>db.pass is not specified</fail></then>
         </if>  
-        <if>
-            <not><isset property="package.name"/></not>
-            <then><fail>package.name is not specified</fail></then>
-        </if>
     </target>
 
 
@@ -69,7 +65,7 @@
 
     <target name="clean"  description="Remove Wordpress directory and Wordpress database">
        
-        <exec command="rm -rf ./${package.name}-v*.zip" />   
+        <exec command="rm -rf ./${packagename}-v*.zip" />   
         <exec command="mysqladmin -f drop ${db.name} -u${db.user} -p${db.pass}" />
         
         <delete dir="${wp.base_dir}" />
@@ -95,5 +91,56 @@
   
     <target name="test-phpunit" depends="install,install-deps">
         <exec command="${bin.phpunit}" passthru="true" checkreturn="true" />
+    </target>
+
+
+    <target name="package" description="Package module into a wordpress plugin package">
+        <propertyregex property="tagname" subject="${env.branch}" pattern="^(\*|\d+(\.\d+){0,2}(\.\*)?)$"  match="$1" casesensitive="false" defaultvalue="false"/>                
+        <echo msg="${tagname}" />
+        <if>
+            <ispropertytrue property="tagname" />
+            <then>
+                <echo msg="Is a tag" />
+                <exec command="zip -r ${env.packagename}-v${env.branch}.zip ./assets/* ./includes/* ./vendor/autoload.php ./vendor/composer/*.php ./*.php ./README.txt ./LICENSE.txt" passthru="true" checkreturn="true" />
+            </then>
+            <else>
+                <echo msg="Is not a tag, so not creating a package" />
+            </else>
+        </if>
+    </target>
+
+
+    <target name="deploy" description="Deploy to s3">
+        <propertyregex property="tagname" subject="${env.branch}" pattern="^(\*|\d+(\.\d+){0,2}(\.\*)?)$"  match="$1" casesensitive="false" defaultvalue="false"/>                
+        <echo msg="${tagname}" />
+        <if>
+            <ispropertytrue property="tagname" />
+            <then>
+                <echo msg="Is a tag" />
+                <exec command="aws s3 cp ${env.packagename}-v${env.branch}.zip s3://zm-software-assets/Plugins/Woocommerce/${env.packagename}-v${env.branch}.zip  --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers" passthru="true" checkreturn="true" />
+            </then>
+            <else>
+                <echo msg="Is not a tag, so not deploying to s3" />
+            </else>
+        </if>
+    </target>
+
+    <target name="deploy_to_plugins_directory" description="Deplopy to Wordpress plugins directory">
+        <propertyregex property="tagname" subject="${env.branch}" pattern="^(\*|\d+(\.\d+){0,2}(\.\*)?)$"  match="$1" casesensitive="false" defaultvalue="false"/>                
+        <echo msg="${tagname}" />
+        <if>
+            <ispropertytrue property="tagname" />
+            <then>
+                <echo msg="Is a tag" />
+                <exec command="cp --parents ./assets/**/* ./includes/*.php ./includes/zipmoney-api/ZipMoney.php ./includes/zipmoney-api/lib/*.php  ./includes/zipmoney-api/lib/**/*.php ./*.php ./README.txt ./LICENSE.txt ~/zipmoney-woocommerce-addon/trunk/" />
+                <exec command="cd ~/zipmoney-woocommerce-addon/  &amp;&amp;  svn stat" />
+                <exec command="cd ~/zipmoney-woocommerce-addon/  &amp;&amp;  svn ci -m '${env.branch}'" />
+                <exec command="cd ~/zipmoney-woocommerce-addon/  &amp;&amp;  svn cp trunk tags/${env.branch} " />
+                <exec command="cd ~/zipmoney-woocommerce-addon/  &amp;&amp;  svn ci -m 'Tagging version version ${env.branch}' " />
+            </then>
+            <else>
+                <echo msg="Is not a tag, so not deploying to wordpress plugins directory" />
+            </else>
+        </if>
     </target>
 </project>
