@@ -90,7 +90,7 @@
         <exec command="${bin.wp} plugin install woocommerce --version='${wc.version}' --path='${wp.base_dir}' --activate" passthru="true" checkreturn="true" />                        
     </target>
   
-    <target name="test-phpunit" depends="install,install-deps">
+    <target name="test-phpunit" depends="install-deps,install">
         <exec command="${bin.phpunit}" passthru="true" checkreturn="true" />
     </target>
 
