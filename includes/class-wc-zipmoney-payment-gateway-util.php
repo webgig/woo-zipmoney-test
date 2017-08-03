@@ -104,8 +104,6 @@ class WC_Zipmoney_Payment_Gateway_Util
     {
         global $wp_version;
 
-        self::log(sprintf('WordPress/%s WooCommerce/%s zipMoney/%s', $wp_version, WC()->version, $payment_gateway->version));
-
         return sprintf('WordPress/%s WooCommerce/%s zipMoney/%s', $wp_version, WC()->version, $payment_gateway->version);
     }
 
