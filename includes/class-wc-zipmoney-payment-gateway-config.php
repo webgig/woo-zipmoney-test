@@ -16,7 +16,7 @@ class WC_Zipmoney_Payment_Gateway_Config
     const CONFIG_SANDBOX_MERCHANT_PRIVATE_KEY = 'sandbox_merchant_private_key';
     const CONFIG_MERCHANT_PUBLIC_KEY = 'merchant_public_key';
     const CONFIG_MERCHANT_PRIVATE_KEY = 'merchant_private_key';
-    const CONFIG_DEBUG = 'debug';
+    const CONFIG_LOGGING_LEVEL = 'log_level';
     const CONFIG_IS_EXPRESS = 'is_express';
     const CONFIG_IS_EXPRESS_PRODUCT_PAGE = 'is_express_product_page';
     const CONFIG_IS_EXPRESS_CART = 'is_express_cart';
@@ -34,6 +34,14 @@ class WC_Zipmoney_Payment_Gateway_Config
 
     const SINGLE_CONFIG_API_KEY = '_api_hash';
     const SINGLE_CONFIG_API_SETTINGS = '_api_settings';
+
+    const LOG_LEVEL_ALL = 1;
+    const LOG_LEVEL_DEBUG = 2;
+    const LOG_LEVEL_INFO = 3;
+    const LOG_LEVEL_WARN = 4;
+    const LOG_LEVEL_ERROR = 5;
+    const LOG_LEVEL_FATAL = 6;
+    const LOG_LEVEL_OFF = 7;
 
 
     public static $zip_order_status = array(
@@ -77,7 +85,6 @@ class WC_Zipmoney_Payment_Gateway_Config
                 'desc_tip' => __('Get your Sandbox Merchant Public Key from your zipMoney account.', 'woocommerce'),
                 'default' => '',
             ),
-
             self::CONFIG_SANDBOX_MERCHANT_PRIVATE_KEY => array(
                 'title' => __('Sandbox Merchant Private Key', 'woocommerce'),
                 'type' => 'text',
@@ -96,12 +103,20 @@ class WC_Zipmoney_Payment_Gateway_Config
                 'desc_tip' => __('Get your Merchant Private Key from your zpMoney account.', 'woocommerce'),
                 'default' => '',
             ),
-            self::CONFIG_DEBUG => array(
-                'title' => __('Debug', 'woocommerce'),
-                'label' => __('Enable logging', 'woocommerce'),
-                'type' => 'checkbox',
-                'desc_tip' => __('Enables logging.', 'woocommerce'),
-                'default' => 'no'
+            self::CONFIG_LOGGING_LEVEL => array(
+                'title' => __('Log Message level', 'woocommerce'),
+                'description' => __('The log level will be used to log the messages. The orders are: ALL < DEBUG < INFO < WARN < ERROR < FATAL < OFF.'),
+                'type' => 'select',
+                'default' => self::LOG_LEVEL_ALL,
+                'options' => array(
+                    self::LOG_LEVEL_ALL => 'All messages',
+                    self::LOG_LEVEL_DEBUG => 'Debug (and above)',
+                    self::LOG_LEVEL_INFO => 'Info (and above)',
+                    self::LOG_LEVEL_WARN => 'Warn (and above)',
+                    self::LOG_LEVEL_ERROR => 'Error (and above)',
+                    self::LOG_LEVEL_FATAL => 'Fatal (and above)',
+                    self::LOG_LEVEL_OFF => 'Off (No message will be logged)'
+                )
             ),
             self::CONFIG_IS_EXPRESS => array(
                 'title' => __('Express Checkout', 'woocommerce'),

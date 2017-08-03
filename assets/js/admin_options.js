@@ -1,6 +1,6 @@
 jQuery('#woocommerce_zipmoney_sandbox').change(function () {
     var sandbox = jQuery('#woocommerce_zipmoney_sandbox_merchant_public_key, #woocommerce_zipmoney_sandbox_merchant_private_key').closest('tr');
-    production = jQuery('#woocommerce_zipmoney_merchant_public_key, #woocommerce_zipmoney_merchant_private_key').closest('tr');
+    var production = jQuery('#woocommerce_zipmoney_merchant_public_key, #woocommerce_zipmoney_merchant_private_key').closest('tr');
 
     if (jQuery(this).is(':checked')) {
         sandbox.show();

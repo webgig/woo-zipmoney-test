@@ -74,6 +74,8 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
         $result = parent::process_admin_options();
 
         $this->WC_Zipmoney_Payment_Gateway_Config->hash_api_key($this);
+        //update the log level
+        WC_Zipmoney_Payment_Gateway_Util::$config_log_level = self::get_option(WC_Zipmoney_Payment_Gateway_Config::CONFIG_LOGGING_LEVEL);
 
         return $result;
     }
@@ -85,11 +87,12 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
         $this->WC_Zipmoney_Payment_Gateway_Widget = new WC_Zipmoney_Payment_Gateway_Widget($this);
 
         //check the logger is enable or not
-        WC_Zipmoney_Payment_Gateway_Util::$config_log_enable =
-            $this->WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DEBUG);
+        WC_Zipmoney_Payment_Gateway_Util::$config_log_level =
+            $this->WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_LOGGING_LEVEL);
 
         //load the hooks
         self::_init_hooks();
     }
+
 
 }

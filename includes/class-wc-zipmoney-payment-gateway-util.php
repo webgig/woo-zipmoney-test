@@ -2,18 +2,18 @@
 class WC_Zipmoney_Payment_Gateway_Util
 {
     private static $logger = null;
-    public static $config_log_enable = true;
+    public static $config_log_level = WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_ALL;
 
     /**
      * Log the message when necessary
      *
      * @param $message
-     * @param bool $forceLog
+     * @param int $log_level
      */
-    public static function log($message, $forceLog = false)
+    public static function log($message, $log_level = WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_ALL)
     {
-        if(self::$config_log_enable == false && $forceLog == false){
-            //if the default setting and it's not force log, then we won't log anything
+        if(self::$config_log_level > $log_level){
+            //log the message with log_level higher than the default value only
             return;
         }
 
