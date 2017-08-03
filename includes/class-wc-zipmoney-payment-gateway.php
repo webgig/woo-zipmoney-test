@@ -11,7 +11,7 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
     public $title = 'Pay Later with zipPay';
     public $description = 'No interest ever - get a decision in seconds!';
 
-    public $version = '1.0';
+    public $version = '1.0.0-rc2';
 
     public $supports = array('products', 'refunds');
 
