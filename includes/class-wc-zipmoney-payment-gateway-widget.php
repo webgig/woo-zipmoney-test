@@ -370,10 +370,6 @@ class WC_Zipmoney_Payment_Gateway_Widget
             return $description;
         }
 
-        if (preg_match("/Learn More/", $description)){
-            return $description;
-        }
-
         return $description . ' <a  id="zipmoney-learn-more" class="zip-hover"  zm-widget="popup"  zm-popup-asset="termsdialog">Learn More</a>
     <script>if(window.$zmJs!==undefined) window.$zmJs._collectWidgetsEl(window.$zmJs);</script>';
     }

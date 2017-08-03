@@ -13,7 +13,8 @@ class WC_Zipmoney_Payment_Gateway_Config
 
     const USER_META_ADMIN_NOTICE = 'zip-admin-notice';
 
-    const LOGO_SOURCE_URL = "http://d3k1w8lx8mqizo.cloudfront.net/logo/25px/";
+    const LOGO_ZIP_MONEY = 'http://d3k1w8lx8mqizo.cloudfront.net/logo/25px/zipmoney.png';
+    const LOGO_ZIP_PAY = 'http://d3k1w8lx8mqizo.cloudfront.net/logo/25px/zippay.png';
 
     const IFRAME_API_URL_PRODUCTION = 'https://account.zipmoney.com.au/scripts/iframe/zipmoney-checkout.js';
     const IFRAME_API_URL_SANDBOX = 'https://account.sandbox.zipmoney.com.au/scripts/iframe/zipmoney-checkout.js';
@@ -24,11 +25,13 @@ class WC_Zipmoney_Payment_Gateway_Config
 
     //Admin setting key
     const CONFIG_ENABLED = 'enabled';
+    const CONFIG_TITLE = 'title';
     const CONFIG_SANDBOX = 'sandbox';
     const CONFIG_SANDBOX_MERCHANT_PUBLIC_KEY = 'sandbox_merchant_public_key';
     const CONFIG_SANDBOX_MERCHANT_PRIVATE_KEY = 'sandbox_merchant_private_key';
     const CONFIG_MERCHANT_PUBLIC_KEY = 'merchant_public_key';
     const CONFIG_MERCHANT_PRIVATE_KEY = 'merchant_private_key';
+    const CONFIG_PRODUCT = 'product';
     const CONFIG_CHARGE_CAPTURE = 'charge_capture';
     const CONFIG_LOGGING_LEVEL = 'log_level';
     const CONFIG_IS_IFRAME_FLOW = 'is_iframe_flow';
@@ -43,6 +46,10 @@ class WC_Zipmoney_Payment_Gateway_Config
     const CONFIG_DISPLAY_TAGLINE_PRODUCT_PAGE = 'display_tagline_product_page';
     const CONFIG_DISPLAY_TAGLINE_CART = 'display_tagline_cart';
     const CONFIG_ORDER_THRESHOLD_MIN_TOTAL = 'order_threshold_min_total';
+
+    // product options
+    const PRODUCT_ZIP_MONEY = 'zipMoney';
+    const PRODUCT_ZIP_PAY = 'zipPay';
 
     // capture charge options
     const CAPTURE_CHARGE_IMMEDIATELY = 'immediately';
@@ -89,6 +96,12 @@ class WC_Zipmoney_Payment_Gateway_Config
                 'description' => '',
                 'default' => 'no'
             ),
+            self::CONFIG_TITLE => array(
+                'title' => __('Title', 'woocommerce'),
+                'type' => 'text',
+                'desc_tip' => __('Payment method title.', 'woocommerce'),
+                'default' => 'ZipMoney, Buy Now, Pay Later',
+            ),
             self::CONFIG_SANDBOX => array(
                 'title' => __('Sandbox', 'woocommerce'),
                 'label' => __('Enable Sandbox Mode', 'woocommerce'),
@@ -119,6 +132,16 @@ class WC_Zipmoney_Payment_Gateway_Config
                 'type' => 'text',
                 'desc_tip' => __('Get your Merchant Private Key from your zpMoney account.', 'woocommerce'),
                 'default' => '',
+            ),
+            self::CONFIG_PRODUCT => array(
+                'title' => __('Product', 'woocommerce'),
+                'type' => 'select',
+                'desc_tip' => __('zipPay/zipMoney', 'woocommerce'),
+                'default' => self::PRODUCT_ZIP_MONEY,
+                'options' => array(
+                    self::PRODUCT_ZIP_MONEY => 'zipMoney',
+                    self::PRODUCT_ZIP_PAY => 'zipPay'
+                )
             ),
             self::CONFIG_CHARGE_CAPTURE => array(
                 'title' => __('Charge Capture option', 'woocommerce'),

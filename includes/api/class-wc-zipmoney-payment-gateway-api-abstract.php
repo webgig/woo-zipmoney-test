@@ -18,6 +18,14 @@ class WC_Zipmoney_Payment_Gateway_API_Abstract {
         } else {
             zipMoney\Configuration::getDefaultConfiguration()->setEnvironment('production');
         }
+
+        //set the platform string
+        zipMoney\Configuration::getDefaultConfiguration()->setPlatform(
+            WC_Zipmoney_Payment_Gateway_Util::get_platform_string(
+                $this->WC_Zipmoney_Payment_Gateway
+            )
+        );
+
     }
 
     /**

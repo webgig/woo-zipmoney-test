@@ -11,6 +11,8 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
     public $title = 'Pay Later with zipPay';
     public $description = 'No interest ever - get a decision in seconds!';
 
+    public $version = '1.0';
+
     public $supports = array('products', 'refunds');
 
     public $form_fields;
@@ -76,6 +78,15 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
     public function init_form_fields()
     {
         $this->form_fields = WC_Zipmoney_Payment_Gateway_Config::get_admin_form_fields();
+    }
+
+    public function init_settings()
+    {
+        parent::init_settings();
+
+        $this->title = self::get_option(WC_Zipmoney_Payment_Gateway_Config::CONFIG_TITLE, '');
+        $this->icon = self::get_option(WC_Zipmoney_Payment_Gateway_Config::CONFIG_PRODUCT, '') == WC_Zipmoney_Payment_Gateway_Config::PRODUCT_ZIP_PAY ?
+            WC_Zipmoney_Payment_Gateway_Config::LOGO_ZIP_PAY : WC_Zipmoney_Payment_Gateway_Config::LOGO_ZIP_MONEY;
     }
 
     /**

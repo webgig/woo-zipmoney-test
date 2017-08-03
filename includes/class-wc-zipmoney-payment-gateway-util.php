@@ -95,6 +95,20 @@ class WC_Zipmoney_Payment_Gateway_Util
         }
     }
 
+    /**
+     * Generate the platform string with the API call
+     *
+     * @return string
+     */
+    public static function get_platform_string(WC_Payment_Gateway $payment_gateway)
+    {
+        global $wp_version;
+
+        self::log(sprintf('WordPress/%s WooCommerce/%s zipMoney/%s', $wp_version, WC()->version, $payment_gateway->version));
+
+        return sprintf('WordPress/%s WooCommerce/%s zipMoney/%s', $wp_version, WC()->version, $payment_gateway->version);
+    }
+
 
     /**
      * Add the zipmoney order status
