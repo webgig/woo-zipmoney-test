@@ -14,6 +14,8 @@
                 });
 
                 e.preventDefault();
+
+                this.prop("disabled",true);
             }
         });
 

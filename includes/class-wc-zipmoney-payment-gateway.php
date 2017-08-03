@@ -49,6 +49,8 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
         add_action('woocommerce_update_options_payment_gateways_' . $this->id, array($this, 'process_admin_options'));
 
         $this->WC_Zipmoney_Payment_Gateway_Widget->init_hooks();
+
+        add_action('admin_notices', array($this, 'show_notices'));
     }
 
     private function _load_dependencies()
@@ -117,6 +119,23 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
     }
 
 
+    public function show_notices()
+    {
+        if (is_user_logged_in()) {
+            $user_id = get_current_user_id();
+            $messages = get_user_meta($user_id, WC_Zipmoney_Payment_Gateway_Config::USER_META_ADMIN_NOTICE, true);
+
+            if (!empty($messages)) {
+                foreach ($messages as $message) {
+                    printf('<div class="notice notice-%s">%s</div>', $message['type'], $message['message']);
+                }
+                //remove user meta
+                update_user_meta($user_id, WC_Zipmoney_Payment_Gateway_Config::USER_META_ADMIN_NOTICE, array());
+            }
+        }
+    }
+
+
     /**
      * Check the environment meet the minimum requirement
      */
@@ -163,10 +182,27 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
                 wp_send_json($response);
                 break;
             case 'charge':
-                WC_Zipmoney_Payment_Gateway_Util::log('Charge called');
+                if(isset($query_vars['data']) == false){
+                    $query_vars['data'] = array();
+                }
+                self::_handle_charge_request($query_vars['action_type'], $query_vars['data']);
+                break;
+            case 'error':
+                WC_Zipmoney_Payment_Gateway_Util::show_error_page();
+                break;
+        }
+        exit;
+    }
 
-                //process the charge process
-                $charge_controller = new WC_Zip_Controller_Charge_Controller($this);
+    private function _handle_charge_request($action_type, $data)
+    {
+        WC_Zipmoney_Payment_Gateway_Util::log('Charge called');
+
+        //process the charge process
+        $charge_controller = new WC_Zip_Controller_Charge_Controller($this);
+
+        switch ($action_type){
+            case 'create':
                 $order = $charge_controller->create_charge($_GET);
                 if(empty($order)){
                     wp_redirect(get_site_url() . '/zipmoneypayment/error');
@@ -174,11 +210,19 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
                     wp_redirect($this->get_return_url($order));
                 }
                 break;
-            case 'error':
-                WC_Zipmoney_Payment_Gateway_Util::show_error_page();
+            case 'capture':
+                $referer = $_SERVER['HTTP_REFERER'];
+                $charge_controller->capture_charge($_POST['zip_order_id']);
+                wp_redirect($referer);
+                exit;
+                break;
+            case 'cancel':
+                $referer = $_SERVER['HTTP_REFERER'];
+                $charge_controller->cancel_charge($_POST['zip_order_id']);
+                wp_redirect($referer);
+                exit;
                 break;
         }
-        exit;
     }
 
 }

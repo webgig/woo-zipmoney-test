@@ -40,11 +40,30 @@ class WC_Zipmoney_Payment_Gateway_Util
         add_rewrite_tag('%route%', '([a-zA-Z]*)');
         add_rewrite_tag('%action_type%', '([a-zA-Z]*)');
         add_rewrite_tag('%data%', '([a-zA-Z0-9]*)');
-        add_rewrite_rule('^zipmoneypayment/([a-zA-Z]*)/?([a-zA-Z]*)/([a-zA-Z0-9]*)/?', 'index.php?p=zipmoneypayment&route=$matches[1]&action_type=$matches[2]&data=$matches[3]', 'top');
+        add_rewrite_rule('^zipmoneypayment/([a-zA-Z]*)/([a-zA-Z]*)/([a-zA-Z0-9]*)/?', 'index.php?p=zipmoneypayment&route=$matches[1]&action_type=$matches[2]&data=$matches[3]', 'top');
         add_rewrite_rule('^zipmoneypayment/([a-zA-Z]*)/?([a-zA-Z]*)/?', 'index.php?p=zipmoneypayment&route=$matches[1]&action_type=$matches[2]', 'top');
 
         flush_rewrite_rules();
     }
+
+
+    /**
+     * Add admin notice to user meta
+     *
+     * @param $message
+     * @param string $type
+     */
+    public static function add_admin_notice($message, $type = 'error')
+    {
+        if (is_user_logged_in()) {
+            $user_id = get_current_user_id();
+            $messages = get_user_meta($user_id, WC_Zipmoney_Payment_Gateway_Config::USER_META_ADMIN_NOTICE, true);
+
+            $messages[] = array('message' => $message, 'type' => $type);
+            update_user_meta($user_id, WC_Zipmoney_Payment_Gateway_Config::USER_META_ADMIN_NOTICE, $messages);
+        }
+    }
+
 
     /**
      * Add the zipmoney order status
@@ -116,7 +135,20 @@ class WC_Zipmoney_Payment_Gateway_Util
         return get_site_url() . '/zipmoneypayment/charge/create';
     }
 
+    /**
+     * Return the capture charge url. It's used in capture button in admin order page.
+     *
+     * @return string
+     */
+    public static function get_capture_charge_url()
+    {
+        return get_site_url() . '/zipmoneypayment/charge/capture';
+    }
 
+    public static function get_cancel_charge_url()
+    {
+        return get_site_url() . '/zipmoneypayment/charge/cancel';
+    }
 
     /**
      * Show the error page

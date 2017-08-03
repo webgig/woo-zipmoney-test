@@ -8,8 +8,10 @@ class WC_Zipmoney_Payment_Gateway_Config
     const POST_TYPE_QUOTE = 'shop_quote';
     const POST_TYPE_ORDER = 'shop_order';
 
-    const ZIP_ORDER_STATUS_AUTHORIZED_KEY = 'wc-zip-authorised';
-    const ZIP_ORDER_STATUS_AUTHORIZED_NAME = 'Authorised';
+    const ZIP_ORDER_STATUS_AUTHORIZED_KEY = 'wc-zip-authorised';    //The key to write in the DB
+    const ZIP_ORDER_STATUS_AUTHORIZED_NAME = 'Authorised';  //The label
+
+    const USER_META_ADMIN_NOTICE = 'zip-admin-notice';
 
     const LOGO_SOURCE_URL = "http://d3k1w8lx8mqizo.cloudfront.net/logo/25px/";
 
@@ -117,6 +119,7 @@ class WC_Zipmoney_Payment_Gateway_Config
             ),
             self::CONFIG_CHARGE_CAPTURE => array(
                 'title' => __('Charge Capture', 'woocommerce'),
+                'label' => 'Immediately after checkout',
                 'type' => 'checkbox',
                 'desc_tip' => __('If it is checked, this will be a direct capture. Un-check it to perform an authorisation only.', 'woocommerce'),
                 'default' => 'yes'

@@ -24,34 +24,50 @@ class WC_Zipmoney_Payment_Gateway_Widget
         //use this hook to convert customer address
         add_action('woocommerce_checkout_update_order_review', array('WC_Zipmoney_Payment_Gateway_Util', 'update_customer_details'));
 
-        //Banners
-        if($WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_BANNERS)){
-            //if the display banner is enabled
-            if($WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_BANNER_SHOP)){
-                add_action('woocommerce_before_main_content', array($this, 'render_banner_shop'));
-            }
-
-            if($WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_BANNER_PRODUCT_PAGE)){
-                add_action('woocommerce_before_main_content', array($this, 'render_banner_product_page'));
-            }
-
-            if($WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_BANNER_CATEGORY)){
-                add_action('woocommerce_before_main_content', array($this, 'render_banner_category'));
-            }
-
-            if($WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_BANNER_CART)){
-                add_action('woocommerce_before_main_content', array($this, 'render_banner_cart'));
-            }
-        }
+        //add banner hook
+        self::_add_banner_hook($WC_Zipmoney_Payment_Gateway_Config);
 
         //Tag line
-        if($WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_TAGLINE_PRODUCT_PAGE)){
-            add_action('woocommerce_single_product_summary', array($this, 'render_tagline'));
-        }
-        if($WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_TAGLINE_CART)){
-            add_action('woocommerce_proceed_to_checkout', array($this, 'render_tagline'), 10);
-        }
+        self::_add_tagline_hook($WC_Zipmoney_Payment_Gateway_Config);
 
+        //Add the express button
+        self::_add_express_button_hook($WC_Zipmoney_Payment_Gateway_Config);
+
+        //Init the widget scripts
+        add_action('admin_enqueue_scripts', array($this, 'backend_scripts'));
+        add_action('wp_enqueue_scripts', array($this, 'frontend_scripts'));
+
+        //Add the capture charge button and cancel charge button
+        add_action('woocommerce_order_item_add_action_buttons', array($this, 'action_add_charge_buttons'));
+
+        //Add the authorised status for payment complete
+        add_filter( 'woocommerce_valid_order_statuses_for_payment_complete', array($this, 'filter_add_authorize_order_status_for_payment_complete'));
+    }
+
+    public function filter_add_authorize_order_status_for_payment_complete($statuses, $instance)
+    {
+        $statuses[] = str_replace('wc-', '', WC_Zipmoney_Payment_Gateway_Config::ZIP_ORDER_STATUS_AUTHORIZED_KEY);
+
+        return $statuses;
+    }
+
+    /**
+     * Add the capture charge button to admin order page
+     *
+     * @param WC_Order $order
+     */
+    public function action_add_charge_buttons(WC_Order $order)
+    {
+        include plugin_dir_path(dirname(__FILE__)) . 'includes/view/frontend/charge_buttons.php';
+    }
+
+    /**
+     * Add express button hook
+     *
+     * @param WC_Zipmoney_Payment_Gateway_Config $WC_Zipmoney_Payment_Gateway_Config
+     */
+    private function _add_express_button_hook(WC_Zipmoney_Payment_Gateway_Config $WC_Zipmoney_Payment_Gateway_Config)
+    {
         $config_is_express = $WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_IS_EXPRESS);
         $config_display_widget = $WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_WIDGET);
 
@@ -77,10 +93,50 @@ class WC_Zipmoney_Payment_Gateway_Widget
             //The widget on cart page
             add_action('woocommerce_proceed_to_checkout', array($this, 'render_widget_cart'), 20);
         }
+    }
 
-        //Init the widget scripts
-        add_action('admin_enqueue_scripts', array($this, 'backend_scripts'));
-        add_action('wp_enqueue_scripts', array($this, 'frontend_scripts'));
+
+    /**
+     * Add the tagline hook
+     *
+     * @param WC_Zipmoney_Payment_Gateway_Config $WC_Zipmoney_Payment_Gateway_Config
+     */
+    private function _add_tagline_hook(WC_Zipmoney_Payment_Gateway_Config $WC_Zipmoney_Payment_Gateway_Config)
+    {
+        if($WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_TAGLINE_PRODUCT_PAGE)){
+            add_action('woocommerce_single_product_summary', array($this, 'render_tagline'));
+        }
+        if($WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_TAGLINE_CART)){
+            add_action('woocommerce_proceed_to_checkout', array($this, 'render_tagline'), 10);
+        }
+    }
+
+    /**
+     * Add the banner hook
+     *
+     * @param WC_Zipmoney_Payment_Gateway_Config $WC_Zipmoney_Payment_Gateway_Config
+     */
+    private function _add_banner_hook(WC_Zipmoney_Payment_Gateway_Config $WC_Zipmoney_Payment_Gateway_Config)
+    {
+        //Banners
+        if($WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_BANNERS)){
+            //if the display banner is enabled
+            if($WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_BANNER_SHOP)){
+                add_action('woocommerce_before_main_content', array($this, 'render_banner_shop'));
+            }
+
+            if($WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_BANNER_PRODUCT_PAGE)){
+                add_action('woocommerce_before_main_content', array($this, 'render_banner_product_page'));
+            }
+
+            if($WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_BANNER_CATEGORY)){
+                add_action('woocommerce_before_main_content', array($this, 'render_banner_category'));
+            }
+
+            if($WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_BANNER_CART)){
+                add_action('woocommerce_before_main_content', array($this, 'render_banner_cart'));
+            }
+        }
     }
 
 
