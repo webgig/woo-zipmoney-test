@@ -100,7 +100,7 @@
     </target>
 
     <target name="publish_to_s3">
-        <exec command="aws s3 cp ${env.packagename}-v${env.branch}.zip s3://zm-software-assets/Plugins/Woocommerce/${env.packagename}-v${env.branch}.zip  --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers" passthru="true" checkreturn="true" />
+        <exec command="aws s3 cp ${env.packagename}-v${env.branch}.zip s3://zm-software-assets/Plugins-Libraries/Plugins/Woocommerce/${env.packagename}-v${env.branch}.zip  --grants read=uri=http://acs.amazonaws.com/groups/global/AllUsers" passthru="true" checkreturn="true" />
     </target> 
 
     <target name="add_to_svn">
