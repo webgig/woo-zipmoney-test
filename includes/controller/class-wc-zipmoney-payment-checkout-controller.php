@@ -7,9 +7,24 @@ class WC_Zip_Controller_Checkout_Controller extends WC_Zip_Controller_Abstract_C
 
     /**
      * Convert the current checkout session to some static data
+     *
+     * @param $post_data
+     * @return array
      */
-    public function create_checkout()
+    public function create_checkout($post_data)
     {
+        $error_message = WC_Zipmoney_Payment_Gateway_Util::verify_customer_details($post_data);
+        if(!empty($error_message)){
+            //if the error messages are not empty, then it should be something missing
+            return array(
+                'error_message' => $error_message,
+                'success' => false
+            );
+        }
+
+        //update the customer details
+        WC_Zipmoney_Payment_Gateway_Util::update_customer_details($post_data);
+
         WC_Zipmoney_Payment_Gateway_Util::log('Checkout session started');
 
         $WC_Zipmoney_Payment_Gateway_API_Request_Checkout = new WC_Zipmoney_Payment_Gateway_API_Request_Checkout(
@@ -34,7 +49,8 @@ class WC_Zip_Controller_Checkout_Controller extends WC_Zip_Controller_Abstract_C
         return array(
             'redirect_uri' => $checkout_response->getUri(),
             'message' => 'Redirecting to zipMoney.',
-            'success' => true
+            'success' => true,
+            'checkout_id' => $checkout_response->getId()
         );
 
     }

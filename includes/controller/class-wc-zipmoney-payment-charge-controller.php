@@ -72,11 +72,15 @@ class WC_Zip_Controller_Charge_Controller extends WC_Zip_Controller_Abstract_Con
                 $result['title'] = 'The checkout is declined';
                 $result['content'] = 'Your application has been declined by zipMoney. Please contact zipMoney for further information.';
                 $result['redirect_url'] = wc_get_checkout_url();
+                //remove the wp_option
+                delete_option($options['checkoutId']);
                 break;
             case 'cancelled':
                 $result['title'] = 'The checkout has been cancelled';
                 $result['content'] = 'The checkout has bee cancelled.';
                 $result['redirect_url'] = wc_get_checkout_url();
+                //remove the wp_option
+                delete_option($options['checkoutId']);
                 break;
         }
 

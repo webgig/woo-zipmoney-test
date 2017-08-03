@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Plugin Name:       WooCommerce ZipMoney Payments v2
+ * Plugin Name:       WooCommerce ZipMoney Payments
  * Plugin URI:        http://www.zipmoney.com.au/
  * Description:       Buy Now Pay Later. ZipMoney Payment Gateway allows realtime credit to customers in a seamless and user friendly way – all without the need to exchange any financial information, and leverage the power of promotional finance to increase sales for our business partners, risk free.
  * Version:           1.0

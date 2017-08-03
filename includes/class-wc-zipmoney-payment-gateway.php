@@ -180,12 +180,8 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
             case 'checkout':
                 //create the checkout object
                 $checkout_controller = new WC_Zip_Controller_Checkout_Controller($this);
-                $response = $checkout_controller->create_checkout();
-                if ($response['success'] == true) {
-                    wp_send_json($response);
-                } else {
-                    wp_send_json($response, 500);
-                }
+                $response = $checkout_controller->create_checkout($_POST);
+                wp_send_json($response);
                 break;
             case 'charge':
                 if(isset($query_vars['data']) == false){
@@ -195,6 +191,13 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
                 break;
             case 'error':
                 WC_Zipmoney_Payment_Gateway_Util::show_error_page();
+                break;
+            case 'clear':
+                WC_Zipmoney_Payment_Gateway_Util::log($_POST);
+
+                if(!empty($_POST['checkout_id'])){
+                    delete_option($_POST['checkout_id']);
+                }
                 break;
         }
         exit;

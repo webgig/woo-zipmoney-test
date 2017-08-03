@@ -249,7 +249,7 @@ class WC_Zipmoney_Payment_Gateway_Widget
 
         wp_register_script('wc-zipmoney-checkout-js', 'https://static.zipmoney.com.au/checkout/checkout-v1.js', array('jquery'));
         wp_enqueue_script('wc-zipmoney-checkout-js');
-        
+
         wp_enqueue_script('wc-zipmoney-js');
     }
 

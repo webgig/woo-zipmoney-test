@@ -155,6 +155,11 @@ class WC_Zipmoney_Payment_Gateway_Util
         return get_site_url() . '/zipmoneypayment/checkout/submit';
     }
 
+    public static function get_clear_options_url()
+    {
+        return get_site_url() . '/zipmoneypayment/clear/option';
+    }
+
 
     /**
      * Return the redirect url which is called after the checkout is created from the API.
@@ -263,6 +268,88 @@ class WC_Zipmoney_Payment_Gateway_Util
     }
 
     /**
+     * Verify the customer post form in checkout page.
+     *
+     * @param $post_data
+     * @return string
+     */
+    public static function verify_customer_details($post_data)
+    {
+        $error_messages = array();
+
+        $required_keys = array(
+            'first_name',
+            'last_name',
+            'address_1',
+            'city',
+            'state',
+            'postcode',
+            'country'
+        );
+
+        //check billing address
+        foreach ($required_keys as $key) {
+            $billing_key = 'billing_' . $key;
+            if (empty($post_data[$billing_key])) {
+                $error_messages[] = self::convert_customer_detail_error_messages($billing_key);
+            }
+        }
+
+        //validate billing email address. Because email address is not required for shipping address
+        if (empty($post_data['billing_email']) || filter_var($post_data['billing_email'], FILTER_VALIDATE_EMAIL) == false) {
+            $error_messages[] = self::convert_customer_detail_error_messages('billing_email');
+        }
+
+        //validate the phone number
+        if (empty($post_data['billing_phone']) || preg_match('/^\+?[ 0-9]+$/', $post_data['billing_phone']) == false) {
+            $error_messages[] = self::convert_customer_detail_error_messages('billing_phone');
+        }
+
+        if (!empty($post_data['ship_to_different_address'])) {
+            //check shipping address
+            foreach ($required_keys as $key) {
+                $shipping_key = 'shipping_' . $key;
+                if (empty($post_data[$shipping_key])) {
+                    $error_messages[] = self::convert_customer_detail_error_messages($shipping_key);
+                }
+            }
+        }
+
+        if (empty($error_messages)) {
+            //if no error has encountered, then
+            return null;
+        }
+
+        //put it into woocommerce error output
+        $output = '<ul>';
+        foreach ($error_messages as $error_message) {
+            $output .= '<li>' . $error_message . '</li>';
+        }
+        $output .= '</ul>';
+        return $output;
+    }
+
+    /**
+     * It's used for verify_customer_details() only
+     *
+     * @param $address_key
+     * @return string
+     */
+    private static function convert_customer_detail_error_messages($address_key)
+    {
+        $words = explode('_', $address_key);
+        $message = '<strong>';
+
+        foreach($words as $word){
+            $message .= ucfirst($word) . ' ';
+        }
+
+        $message .= '</strong>';
+
+        return $message . 'is required';
+    }
+
+    /**
      * Update the customer details in cart session
      *
      * @param $post_data
@@ -271,13 +358,16 @@ class WC_Zipmoney_Payment_Gateway_Util
     {
         $customer_details = array();
 
-        $post_data = explode("&", $post_data);
-
-        if ($post_data) {
-            foreach ($post_data as $key => $value) {
-                list($k, $v) = explode("=", $value);
-                $customer_details[$k] = $v;
+        if(is_array($post_data) == false){
+            $post_data = explode("&", $post_data);
+            if ($post_data) {
+                foreach ($post_data as $key => $value) {
+                    list($k, $v) = explode("=", $value);
+                    $customer_details[$k] = $v;
+                }
             }
+        } else {
+            $customer_details = $post_data;
         }
 
         $ship_to_different_address = empty($customer_details['ship_to_different_address']) ? false : true;

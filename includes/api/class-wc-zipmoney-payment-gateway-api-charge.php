@@ -195,6 +195,7 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment
             WC_Zipmoney_Payment_Gateway_Util::log('Capture charge response: ' . WC_Zipmoney_Payment_Gateway_Util::object_json_encode($charge));
 
             if ($charge->getState() == 'captured') {
+
                 WC_Zipmoney_Payment_Gateway_Util::log('Has captured. charge_id: ' . $charge->getId());
 
                 $order->payment_complete($charge->getId());
