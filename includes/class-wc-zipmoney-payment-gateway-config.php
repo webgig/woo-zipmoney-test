@@ -31,9 +31,6 @@ class WC_Zipmoney_Payment_Gateway_Config
     const CONFIG_MERCHANT_PRIVATE_KEY = 'merchant_private_key';
     const CONFIG_CHARGE_CAPTURE = 'charge_capture';
     const CONFIG_LOGGING_LEVEL = 'log_level';
-//    const CONFIG_IS_EXPRESS = 'is_express';
-//    const CONFIG_IS_EXPRESS_PRODUCT_PAGE = 'is_express_product_page';
-//    const CONFIG_IS_EXPRESS_CART = 'is_express_cart';
     const CONFIG_IS_IFRAME_FLOW = 'is_iframe_flow';
     const CONFIG_DISPLAY_WIDGET = 'display_widget';
     const CONFIG_DISPLAY_WIDGET_PRODUCT_PAGE = 'display_widget_product_page';
