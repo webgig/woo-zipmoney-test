@@ -236,8 +236,9 @@ class WC_Zipmoney_Payment_Gateway_Util
 
         $error_code = 0;
 
-        if(!empty($exception->getResponseObject())){
-            $error_code = $exception->getResponseObject()->getError()->getCode();
+        $response_object = $exception->getResponseObject();
+        if(!empty($response_object)){
+            $error_code = $response_object->getError()->getCode();
         }
 
         if($exception->getCode() == 402 && !empty($error_codes_map[$error_code])){

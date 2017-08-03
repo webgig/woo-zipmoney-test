@@ -256,8 +256,9 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment
             //write the charge object info to order meta
             update_post_meta($order->id, WC_Zipmoney_Payment_Gateway_Config::META_CHECKOUT_ID, $checkout_id);
 
-            if (!empty($WC_Session->get(WC_Zipmoney_Payment_Gateway_Config::META_USER_ID, ''))) {
-                update_post_meta($order->id, '_customer_user', $WC_Session->get(WC_Zipmoney_Payment_Gateway_Config::META_USER_ID));
+            $user_id = $WC_Session->get(WC_Zipmoney_Payment_Gateway_Config::META_USER_ID, '');
+            if (!empty($user_id)) {
+                update_post_meta($order->id, '_customer_user', $user_id);
             }
 
             $charge = $this->api_instance->chargesCreate($body, WC_Zipmoney_Payment_Gateway_Util::get_uuid());
@@ -272,7 +273,8 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment
             );
 
             //if it is not successful, throw exception
-            if (empty($charge->getState())) {
+            $charge_state = $charge->getState();
+            if (empty($charge_state)) {
                 throw new Exception('Unable to create charges');
             }
 
