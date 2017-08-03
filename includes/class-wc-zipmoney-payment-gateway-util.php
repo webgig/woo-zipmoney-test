@@ -34,6 +34,18 @@ class WC_Zipmoney_Payment_Gateway_Util
         self::$logger->add('zipmoney', $message);
     }
 
+
+    /**
+     * Use zipmoney SDK to json_encode an object
+     *
+     * @param $data
+     * @return string
+     */
+    public static function object_json_encode($data)
+    {
+        return json_encode(\zipMoney\ObjectSerializer::sanitizeForSerialization($data));
+    }
+
     /**
      * This rewrite rule will be called during WordPress init action
      */

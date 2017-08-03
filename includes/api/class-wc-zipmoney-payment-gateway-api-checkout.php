@@ -32,14 +32,14 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Checkout extends WC_Zipmoney_Payme
         $body = self::_prepare_request_for_checkout($WC_Session, $redirect_url);
         //log the body information
         WC_Zipmoney_Payment_Gateway_Util::log('Sending checkout request to API', WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_INFO);
-        WC_Zipmoney_Payment_Gateway_Util::log($body, WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG);
+        WC_Zipmoney_Payment_Gateway_Util::log(WC_Zipmoney_Payment_Gateway_Util::object_json_encode($body), WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG);
 
         try {
             $checkout = $this->api_instance->checkoutsCreate($body);
 
             //log the checkout information
             WC_Zipmoney_Payment_Gateway_Util::log('Return from checkout API', WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_INFO);
-            WC_Zipmoney_Payment_Gateway_Util::log($checkout, WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG);
+            WC_Zipmoney_Payment_Gateway_Util::log(WC_Zipmoney_Payment_Gateway_Util::object_json_encode($checkout), WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG);
 
             //add meta data to session
             $WC_Session->set(WC_Zipmoney_Payment_Gateway_Config::META_CHECKOUT_ID, $checkout->getId());

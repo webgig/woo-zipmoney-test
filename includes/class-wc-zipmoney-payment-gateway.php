@@ -223,8 +223,6 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
         $amount = empty($amount) ? 0 : $amount;
         $reason = empty($reason) ? 'No reason' : $reason;
 
-        WC_Zipmoney_Payment_Gateway_Util::log('refund finished', WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_INFO);
-
         return $WC_Zipmoney_Payment_Gateway_API_Request_Charge->refund_order_charge(
             $order,
             $this->WC_Zipmoney_Payment_Gateway_Config->get_merchant_public_key(),

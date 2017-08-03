@@ -7,6 +7,8 @@ use \zipMoney\Model\OrderShipping;
 use \zipMoney\Model\ChargeOrder;
 use \zipMoney\Model\CreateRefundRequest;
 use \zipMoney\Model\Refund;
+use \zipMoney\Model\CaptureChargeRequest;
+use \zipMoney\ObjectSerializer;
 
 class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment_Gateway_API_Abstract
 {
@@ -52,10 +54,12 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment
                 )
             );
 
+            WC_Zipmoney_Payment_Gateway_Util::log('Refund request: ' . WC_Zipmoney_Payment_Gateway_Util::object_json_encode($body));
+
             //Call the API
             $refund = $this->api_instance->refundsCreate($body, WC_Zipmoney_Payment_Gateway_Util::get_uuid());
 
-            WC_Zipmoney_Payment_Gateway_Util::log($refund);
+            WC_Zipmoney_Payment_Gateway_Util::log('Refund response: ' . WC_Zipmoney_Payment_Gateway_Util::object_json_encode($refund));
 
             //update the order info
             self::_update_order_refund($order, $refund);
@@ -126,14 +130,16 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment
                 throw new Exception('The order status is not in Authorized status');
             }
 
+            WC_Zipmoney_Payment_Gateway_Util::log('Cancel charge request: charge_id:' . $charge_id);
+
             $charge = $this->api_instance->chargesCancel($charge_id, WC_Zipmoney_Payment_Gateway_Util::get_uuid());
 
-            WC_Zipmoney_Payment_Gateway_Util::log($charge);
+            WC_Zipmoney_Payment_Gateway_Util::log('Cancel charge response: ' . WC_Zipmoney_Payment_Gateway_Util::object_json_encode($charge));
 
             if($charge->getState() == 'cancelled'){
                 WC_Zipmoney_Payment_Gateway_Util::log('Charge has been cancelled. charge_id: ' . $charge->getId());
 
-                $order->cancel_order(printf('The zipMoney charge (id:%s) has been cancelled.', $charge->getId()));
+                $order->cancel_order(sprintf('The zipMoney charge (id:%s) has been cancelled.', $charge->getId()));
                 return true;
             } else {
                 WC_Zipmoney_Payment_Gateway_Util::log('Unable to cancel charge. charge_id: ' . $charge->getId());
@@ -179,13 +185,16 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment
                 throw new Exception('The order status is not in Authorized status');
             }
 
-            $body = new \zipMoney\Model\CaptureChargeRequest(
+            $body = new CaptureChargeRequest(
                 array('amount' => $order->get_total())
             );
 
+            WC_Zipmoney_Payment_Gateway_Util::log('Capture charge capture_id:' . $charge_id);
+            WC_Zipmoney_Payment_Gateway_Util::log('Capture charge request: ' . WC_Zipmoney_Payment_Gateway_Util::object_json_encode($body));
+
             $charge = $this->api_instance->chargesCapture($charge_id, $body, WC_Zipmoney_Payment_Gateway_Util::get_uuid());
 
-            WC_Zipmoney_Payment_Gateway_Util::log($charge);
+            WC_Zipmoney_Payment_Gateway_Util::log('Capture charge response: ' . WC_Zipmoney_Payment_Gateway_Util::object_json_encode($charge));
 
             if ($charge->getState() == 'captured') {
                 WC_Zipmoney_Payment_Gateway_Util::log('Has captured. charge_id: ' . $charge->getId());
@@ -240,7 +249,7 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment
 
             //log the post body
             WC_Zipmoney_Payment_Gateway_Util::log(
-                sprintf('Request charge order (%s):', $order->id) . json_encode($body),
+                sprintf('Request charge order (%s):', $order->id) . WC_Zipmoney_Payment_Gateway_Util::object_json_encode($body),
                 WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG
             );
 
@@ -258,7 +267,7 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment
 
             //log the charge information
             WC_Zipmoney_Payment_Gateway_Util::log(
-                sprintf('Order (%s) Charge response:', $order->id) . json_encode($charge),
+                sprintf('Order (%s) Charge response:', $order->id) . WC_Zipmoney_Payment_Gateway_Util::object_json_encode($charge),
                 WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG
             );
 
