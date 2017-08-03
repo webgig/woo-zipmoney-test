@@ -8,6 +8,9 @@ class WC_Zipmoney_Payment_Gateway_Config
     const POST_TYPE_QUOTE = 'shop_quote';
     const POST_TYPE_ORDER = 'shop_order';
 
+    const ZIP_ORDER_STATUS_AUTHORIZED_KEY = 'wc-zip-authorised';
+    const ZIP_ORDER_STATUS_AUTHORIZED_NAME = 'Authorised';
+
     const LOGO_SOURCE_URL = "http://d3k1w8lx8mqizo.cloudfront.net/logo/25px/";
 
     const IFRAME_API_URL_PRODUCTION = 'https://account.zipmoney.com.au/scripts/iframe/zipmoney-checkout.js';
@@ -23,6 +26,7 @@ class WC_Zipmoney_Payment_Gateway_Config
     const CONFIG_SANDBOX_MERCHANT_PRIVATE_KEY = 'sandbox_merchant_private_key';
     const CONFIG_MERCHANT_PUBLIC_KEY = 'merchant_public_key';
     const CONFIG_MERCHANT_PRIVATE_KEY = 'merchant_private_key';
+    const CONFIG_CHARGE_CAPTURE = 'charge_capture';
     const CONFIG_LOGGING_LEVEL = 'log_level';
     const CONFIG_IS_EXPRESS = 'is_express';
     const CONFIG_IS_EXPRESS_PRODUCT_PAGE = 'is_express_product_page';
@@ -111,6 +115,12 @@ class WC_Zipmoney_Payment_Gateway_Config
                 'desc_tip' => __('Get your Merchant Private Key from your zpMoney account.', 'woocommerce'),
                 'default' => '',
             ),
+            self::CONFIG_CHARGE_CAPTURE => array(
+                'title' => __('Charge Capture', 'woocommerce'),
+                'type' => 'checkbox',
+                'desc_tip' => __('If it is checked, this will be a direct capture. Un-check it to perform an authorisation only.', 'woocommerce'),
+                'default' => 'yes'
+            ),
             self::CONFIG_LOGGING_LEVEL => array(
                 'title' => __('Log Message level', 'woocommerce'),
                 'description' => __('The log level will be used to log the messages. The orders are: ALL < DEBUG < INFO < WARN < ERROR < FATAL < OFF.'),
@@ -145,7 +155,7 @@ class WC_Zipmoney_Payment_Gateway_Config
             ),
             self::CONFIG_IS_IFRAME_FLOW => array(
                 'title' => __('Iframe Checkout', 'woocommerce'),
-                'label' => __('Enable Iframe Checkout Flow.', 'woocommerce'),
+                'label' => __('Enable In-Context Checkout Flow.', 'woocommerce'),
                 'type' => 'checkbox',
                 'description' => __('In-context checkout flow without leaving the store. In order for this to work on product and cart pages, express checkout has to be turned on for those pages.', 'woocommerce'),
                 'default' => 'no'

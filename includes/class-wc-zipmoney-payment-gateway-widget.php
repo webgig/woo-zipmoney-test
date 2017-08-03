@@ -18,6 +18,12 @@ class WC_Zipmoney_Payment_Gateway_Widget
 
         $WC_Zipmoney_Payment_Gateway_Config = $this->WC_Zipmoney_Payment_Gateway->WC_Zipmoney_Payment_Gateway_Config;
 
+        //inject the order button
+        add_filter('woocommerce_order_button_html', array($this, 'order_button'), 10, 2);
+
+        //use this hook to convert customer address
+        add_action('woocommerce_checkout_update_order_review', array('WC_Zipmoney_Payment_Gateway_Util', 'update_customer_details'));
+
         //Banners
         if($WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_DISPLAY_BANNERS)){
             //if the display banner is enabled
@@ -107,6 +113,9 @@ class WC_Zipmoney_Payment_Gateway_Widget
 
         wp_register_script('wc-zipmoney-widget-js', 'https://d3k1w8lx8mqizo.cloudfront.net/lib/js/zm-widget-js/dist/zipmoney-widgets-v1.min.js', array('jquery'), '1.0.5', true);
         wp_enqueue_script('wc-zipmoney-widget-js');
+
+        wp_register_script('wc-zipmoney-checkout-js', 'https://static.zipmoney.com.au/checkout/checkout-v1.js', array('jquery'));
+        wp_enqueue_script('wc-zipmoney-checkout-js');
 
         $is_sandbox = $this->WC_Zipmoney_Payment_Gateway->WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_SANDBOX);
 
@@ -216,7 +225,7 @@ class WC_Zipmoney_Payment_Gateway_Widget
      */
     public function render_root_el()
     {
-        echo '<div data-zm-merchant="'.$this->WC_Zipmoney_Payment_Gateway->WC_Zipmoney_Payment_Gateway_Config->get_merchant_public_key().'" data-env="' .
+        echo '<div data-zm-merchant="'.$this->WC_Zipmoney_Payment_Gateway->WC_Zipmoney_Payment_Gateway_Config->get_merchant_private_key().'" data-env="' .
             $this->WC_Zipmoney_Payment_Gateway->WC_Zipmoney_Payment_Gateway_Config->get_environment() . '"></div> ';
     }
 
@@ -241,5 +250,21 @@ class WC_Zipmoney_Payment_Gateway_Widget
 
         return $description . ' <a  id="zipmoney-learn-more" class="zip-hover"  zm-widget="popup"  zm-popup-asset="termsdialog">Learn More</a>
     <script>if(window.$zmJs!==undefined) window.$zmJs._collectWidgetsEl(window.$zmJs);</script>';
+    }
+
+
+    /**
+     * Renders the place order button in the checkout page by using the checkout.js
+     *
+     * @access public
+     */
+    public function order_button($text)
+    {
+
+        $is_iframe_checkout = $this->WC_Zipmoney_Payment_Gateway->WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_IS_IFRAME_FLOW);
+
+        include plugin_dir_path(dirname(__FILE__)) . 'includes/view/frontend/order_button.php';
+
+        return $text;
     }
 }

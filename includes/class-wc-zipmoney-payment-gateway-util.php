@@ -12,17 +12,17 @@ class WC_Zipmoney_Payment_Gateway_Util
      */
     public static function log($message, $log_level = WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_ALL)
     {
-        if(self::$config_log_level > $log_level){
+        if (self::$config_log_level > $log_level) {
             //log the message with log_level higher than the default value only
             return;
         }
 
-        if (is_array($message) || is_object($message)){
+        if (is_array($message) || is_object($message)) {
             //if the input is array or object, use print_r to convert it to string
             $message = print_r($message, true);
         }
 
-        if(is_null(self::$logger)) {
+        if (is_null(self::$logger)) {
             //check the logger is initialised
             self::$logger = new WC_Logger();
         }
@@ -39,10 +39,25 @@ class WC_Zipmoney_Payment_Gateway_Util
         // Define the tag for the individual ID
         add_rewrite_tag('%route%', '([a-zA-Z]*)');
         add_rewrite_tag('%action_type%', '([a-zA-Z]*)');
-        add_rewrite_tag('%order_number%', '([a-zA-Z0-9]*)');
-        add_rewrite_rule('^zipmoneypayment/([a-zA-Z]*)/?([a-zA-Z]*)/([a-zA-Z0-9]*)', 'index.php?p=zipmoneypayment&route=$matches[1]&action_type=$matches[2]&order_number=$matches[3]', 'top');
+        add_rewrite_tag('%data%', '([a-zA-Z0-9]*)');
+        add_rewrite_rule('^zipmoneypayment/([a-zA-Z]*)/?([a-zA-Z]*)/([a-zA-Z0-9]*)/?', 'index.php?p=zipmoneypayment&route=$matches[1]&action_type=$matches[2]&data=$matches[3]', 'top');
+        add_rewrite_rule('^zipmoneypayment/([a-zA-Z]*)/?([a-zA-Z]*)/?', 'index.php?p=zipmoneypayment&route=$matches[1]&action_type=$matches[2]', 'top');
 
         flush_rewrite_rules();
+    }
+
+    /**
+     * Add the zipmoney order status
+     *
+     * @param $order_statuses
+     * @return mixed
+     */
+    public static function add_zipmoney_to_order_statuses($order_statuses)
+    {
+        $order_statuses[WC_Zipmoney_Payment_Gateway_Config::ZIP_ORDER_STATUS_AUTHORIZED_KEY] =
+            WC_Zipmoney_Payment_Gateway_Config::ZIP_ORDER_STATUS_AUTHORIZED_NAME;
+
+        return $order_statuses;
     }
 
     /**
@@ -64,14 +79,44 @@ class WC_Zipmoney_Payment_Gateway_Util
         );
     }
 
+    public static function register_zip_order_statuses()
+    {
+        register_post_status(WC_Zipmoney_Payment_Gateway_Config::ZIP_ORDER_STATUS_AUTHORIZED_KEY, array(
+            'label' => WC_Zipmoney_Payment_Gateway_Config::ZIP_ORDER_STATUS_AUTHORIZED_NAME,
+            'public' => true,
+            'exclude_from_search' => false,
+            'show_in_admin_all_list' => true,
+            'show_in_admin_status_list' => true,
+            'label_count' => _n_noop(
+                WC_Zipmoney_Payment_Gateway_Config::ZIP_ORDER_STATUS_AUTHORIZED_NAME . ' <span class="count">(%s)</span>',
+                WC_Zipmoney_Payment_Gateway_Config::ZIP_ORDER_STATUS_AUTHORIZED_NAME . ' <span class="count">(%s)</span>'
+            )
+        ));
+    }
+
+
     /**
-     * @param WC_Order $order
+     * Get the order redirect url. Which is used in creating checkout to the API
+     *
      * @return string
      */
-    public static function get_order_redirect_url(WC_Order $order)
+    public static function get_checkout_endpoint_url()
     {
-        return get_site_url() . '/zipmoneypayment/order/confirm/' . $order->id;
+        return get_site_url() . '/zipmoneypayment/checkout/submit';
     }
+
+
+    /**
+     * Return the redirect url which is called after the checkout is created from the API.
+     *
+     * @return string
+     */
+    public static function get_complete_endpoint_url()
+    {
+        return get_site_url() . '/zipmoneypayment/charge/create';
+    }
+
+
 
     /**
      * Show the error page
@@ -79,5 +124,94 @@ class WC_Zipmoney_Payment_Gateway_Util
     public static function show_error_page()
     {
         include plugin_dir_path(dirname(__FILE__)) . 'includes/view/frontend/error.php';
+    }
+
+    /**
+     * Update the customer details in cart session
+     *
+     * @param $post_data
+     */
+    public static function update_customer_details($post_data)
+    {
+        $customer_details = array();
+
+        $post_data = explode("&", $post_data);
+
+        if ($post_data) {
+            foreach ($post_data as $key => $value) {
+                list($k, $v) = explode("=", $value);
+                $customer_details[$k] = $v;
+            }
+        }
+
+        $ship_to_different_address = (bool)$customer_details['ship_to_different_address'];
+
+        //The address keys used for iterate the shipping and billing address
+        $address_keys = array(
+            'first_name',
+            'last_name',
+            'company',
+            'email',
+            'phone',
+            'country',
+            'address_1',
+            'address_2',
+            'city',
+            'state',
+            'postcode'
+        );
+        $need_decode_address_keys = array('email', 'address_1', 'address_2');
+        $zip_billing_details = array();
+        $zip_shipping_details = array();
+
+
+        //set the billing address
+        foreach ($address_keys as $address_key) {
+            $billing_key = 'billing_' . $address_key;
+            if (isset($customer_details[$billing_key])) {
+                if (in_array($address_key, $need_decode_address_keys)) {
+                    $zip_billing_details['zip_' . $billing_key] = urldecode($customer_details[$billing_key]);
+                    continue;
+                }
+                $zip_billing_details['zip_' . $billing_key] = $customer_details[$billing_key];
+            } else {
+                $customer_details[$billing_key] = '';
+            }
+        }
+
+        WC()->session->set('zip_billing_details', $zip_billing_details);
+
+        if (wc_ship_to_billing_address_only() || $ship_to_different_address == false) {
+            //if the woocommerce setting is set to ship to billing address only or the customer doesn't select ship to different address
+            foreach ($address_keys as $address_key) {
+                $shipping_key = 'shipping_' . $address_key;
+                $billing_key = 'billing_' . $address_key;
+                if (isset($customer_details[$billing_key])) {
+                    if (in_array($address_key, $need_decode_address_keys)) {
+                        $zip_shipping_details['zip_' . $shipping_key] = urldecode($customer_details[$billing_key]);
+                        continue;
+                    }
+                    $zip_shipping_details['zip_' . $shipping_key] = $customer_details[$billing_key];
+                } else {
+                    $customer_details[$billing_key] = '';
+                }
+            }
+        } else {
+            //if the customer wants to ship to different address
+            foreach ($address_keys as $address_key) {
+                $shipping_key = 'shipping_' . $address_key;
+                if (isset($customer_details[$shipping_key])) {
+                    if (in_array($address_key, $need_decode_address_keys)) {
+                        $zip_shipping_details['zip_' . $shipping_key] = urldecode($customer_details[$shipping_key]);
+                        continue;
+                    }
+                    $zip_shipping_details['zip_' . $shipping_key] = $customer_details[$shipping_key];
+                } else {
+                    $customer_details[$shipping_key] = '';
+                }
+            }
+        }
+
+        WC()->session->set('zip_shipping_details', $zip_shipping_details);
     }
 }

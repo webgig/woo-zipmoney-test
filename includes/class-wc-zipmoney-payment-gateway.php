@@ -36,6 +36,10 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
         add_action('init', array('WC_Zipmoney_Payment_Gateway_Util', 'add_rewrite_rules'));
         add_action('init', array('WC_Zipmoney_Payment_Gateway_Util', 'register_quote_post_type'));
 
+        add_action('init', array('WC_Zipmoney_Payment_Gateway_Util', 'register_zip_order_statuses'));
+        //add the zipmoney status
+        add_filter('wc_order_statuses', array('WC_Zipmoney_Payment_Gateway_Util', 'add_zipmoney_to_order_statuses'));
+
         add_action('parse_request', array($this, 'process_zipmoney_actions'));
 
         //have some checking
@@ -52,6 +56,10 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wc-zipmoney-payment-gateway-config.php';
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wc-zipmoney-payment-gateway-widget.php';
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/class-wc-zipmoney-payment-gateway-util.php';
+
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/controller/class-wc-zipmoney-payment-abstract-controller.php';
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/controller/class-wc-zipmoney-payment-checkout-controller.php';
+        require_once plugin_dir_path(dirname(__FILE__)) . 'includes/controller/class-wc-zipmoney-payment-charge-controller.php';
 
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/api/class-wc-zipmoney-payment-gateway-api-abstract.php';
         require_once plugin_dir_path(dirname(__FILE__)) . 'includes/api/class-wc-zipmoney-payment-gateway-api-checkout.php';
@@ -137,73 +145,40 @@ class WC_Zipmoney_Payment_Gateway extends WC_Payment_Gateway {
     {
         $query_vars = $wp->query_vars;
 
+        WC_Zipmoney_Payment_Gateway_Util::log('Query vars:' . print_r($query_vars, true));
+
         if (isset($query_vars['p']) == false || $query_vars['p'] != "zipmoneypayment") {
             return false;
         }
-        if (isset($query_vars['route']) == false || $query_vars['route'] != 'order') {
-            return false;
-        }
-        if (isset($query_vars['action_type']) == false || $query_vars['action_type'] != 'confirm') {
-            return false;
-        }
-        if(isset($query_vars['order_number']) == false){
+
+        if (isset($query_vars['route']) == false) {
             return false;
         }
 
-        switch ($query_vars['action_type']) {
-            case 'confirm':
-                //create the charge
-                $order = new WC_Order($query_vars['order_number']);
+        switch ($query_vars['route']) {
+            case 'checkout':
+                //create the checkout object
+                $checkout_controller = new WC_Zip_Controller_Checkout_Controller($this);
+                $response = $checkout_controller->create_checkout();
+                wp_send_json($response);
+                break;
+            case 'charge':
+                WC_Zipmoney_Payment_Gateway_Util::log('Charge called');
 
-                $this->WC_Zipmoney_Payment_Gateway_Config = new WC_Zipmoney_Payment_Gateway_Config($this);
-                $WC_Zipmoney_Payment_Gateway_API_Request_Charge = new WC_Zipmoney_Payment_Gateway_API_Request_Charge($this);
-
-                $checkout_response = $WC_Zipmoney_Payment_Gateway_API_Request_Charge->charge(
-                    $order,
-                    $this->WC_Zipmoney_Payment_Gateway_Config->get_merchant_public_key()
-                );
-
-                if(empty($checkout_response)){
-                    WC_Zipmoney_Payment_Gateway_Util::show_error_page();
+                //process the charge process
+                $charge_controller = new WC_Zip_Controller_Charge_Controller($this);
+                $order = $charge_controller->create_charge($_GET);
+                if(empty($order)){
+                    wp_redirect(get_site_url() . '/zipmoneypayment/error');
                 } else {
                     wp_redirect($this->get_return_url($order));
-                    exit;
                 }
                 break;
+            case 'error':
+                WC_Zipmoney_Payment_Gateway_Util::show_error_page();
+                break;
         }
-    }
-
-    /**
-     * Process payment after the order is created
-     *
-     * @param int $order_id
-     * @return array|null
-     */
-    public function process_payment($order_id)
-    {
-        $order = new WC_Order($order_id);
-
-        WC_Zipmoney_Payment_Gateway_Util::log('Process payment');
-
-        $this->WC_Zipmoney_Payment_Gateway_Config = new WC_Zipmoney_Payment_Gateway_Config($this);
-        $WC_Zipmoney_Payment_Gateway_API_Request_Checkout = new WC_Zipmoney_Payment_Gateway_API_Request_Checkout($this);
-
-        $checkout_response = $WC_Zipmoney_Payment_Gateway_API_Request_Checkout->checkout(
-            $order,
-            WC_Zipmoney_Payment_Gateway_Util::get_order_redirect_url($order),
-            $this->WC_Zipmoney_Payment_Gateway_Config->get_merchant_public_key()
-        );
-
-        if(empty($checkout_response)){
-            //if it has exception
-            return null;
-        }
-
-        return array(
-            'result' => 'success',
-            'redirect' => $checkout_response->getUri()
-        );
-
+        exit;
     }
 
 }

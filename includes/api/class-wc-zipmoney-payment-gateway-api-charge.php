@@ -1,47 +1,66 @@
 <?php
 class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment_Gateway_API_Abstract
 {
-
     /**
-     * Create a charge to an order
+     * Create the charge
      *
-     * @param WC_Order $order
+     * @param WC_Session $WC_Session
      * @param $api_key
-     * @return null|\zipMoney\Model\Charge
+     * @param array $options
+     * @return null|WC_Order|WP_Error
      */
-    public function charge(WC_Order $order, $api_key)
+    public function create_charge(WC_Session $WC_Session, $api_key, $options = array())
     {
-        zipMoney\Configuration::getDefaultConfiguration()->setApiKey('Authorization', $api_key);
-        zipMoney\Configuration::getDefaultConfiguration()->setEnvironment('mock');
+        parent::set_api_key($api_key);
 
         $api_instance = new \zipMoney\Client\Api\ChargesApi();
-        $body = self::_prepare_charges_request($order);
-
-        //log the post body
-        WC_Zipmoney_Payment_Gateway_Util::log($body, WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG);
 
         try {
+            $order = self::_create_order_by_charge($WC_Session);
+            $body = self::_prepare_charges_request($WC_Session);
+
+            //delete the option
+            delete_option($options['checkoutId']);
+
+            //log the post body
+            WC_Zipmoney_Payment_Gateway_Util::log($body, WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG);
+
+            //write the charge object info to order meta
+            update_post_meta($order->id, WC_Zipmoney_Payment_Gateway_Config::META_CHECKOUT_ID, $options['checkoutId']);
+
+            if (!empty($WC_Session->get('user_id', ''))) {
+                update_post_meta($order->id, '_customer_user', $WC_Session->get('user_id'));
+            }
+
             $charge = $api_instance->chargesCreate($body);
-
-            //log the checkout information
+            //log the charge information
             WC_Zipmoney_Payment_Gateway_Util::log($charge, WC_Zipmoney_Payment_Gateway_Config::LOG_LEVEL_DEBUG);
+            
+            //if it is not successful, throw exception
+            if(in_array($charge->getState(), array('authorised', 'captured')) == false){
+                throw new Exception('Unable to create charges');
+            }
 
+            //set the charge id to order
             update_post_meta($order->id, WC_Zipmoney_Payment_Gateway_Config::META_CHARGE_ID, $charge->getId());
 
-            //change the order type back to order in order to show the order
-            set_post_type($order->id, WC_Zipmoney_Payment_Gateway_Config::POST_TYPE_ORDER);
+            if($charge->getState() == 'captured'){
+                //if the payment is captured, we will complete the order
+                $order->payment_complete($charge->getId());
+            } else {
+                //if it is authorised, then we will charge the order later
+                $order->add_order_note('A zipMoney charge authorization is completed. Waiting for shop administrator to complete the charge. Charge id: ' . $charge->getId());
+                $order->update_status(WC_Zipmoney_Payment_Gateway_Config::ZIP_ORDER_STATUS_AUTHORIZED_KEY);
+            }
 
-            //Add order note
-            $order->payment_complete();
+            return $order;
 
-            return $charge;
-
-        } catch (\zipMoney\ApiException $exception) {
+        } catch (\zipMoney\ApiException $exception){
             WC_Zipmoney_Payment_Gateway_Util::log($exception->getCode() . $exception->getMessage());
             WC_Zipmoney_Payment_Gateway_Util::log($exception->getResponseBody());
 
             wc_add_notice(__('Payment error:', 'woothemes') . $exception->getMessage(), 'error');
-        } catch(Exception $exception) {
+        } catch (Exception $exception) {
             WC_Zipmoney_Payment_Gateway_Util::log($exception->getCode() . $exception->getMessage());
             wc_add_notice(__('Payment error:', 'woothemes') . $exception->getMessage(), 'error');
         }
@@ -49,120 +68,183 @@ class WC_Zipmoney_Payment_Gateway_API_Request_Charge extends WC_Zipmoney_Payment
         return null;
     }
 
+
     /**
-     * Create the ChargeRequest
+     * Create an order once the charge is completed
      *
-     * @param WC_Order $order
+     * @param WC_Session $WC_Session
+     * @return WC_Order|WP_Error
+     * @throws Exception
+     */
+    private function _create_order_by_charge(WC_Session $WC_Session)
+    {
+        $order = wc_create_order();
+        foreach ($WC_Session->get('cart') as $order_item) {
+            $product = new WC_Product(intval($order_item['product_id']));
+            if (empty($product)) {
+                throw new Exception('Unable to find product with product_id: ' . $order_item['product_id']);
+            }
+            if ($product->managing_stock() == true && $product->get_stock_quantity() < $order_item['quantity']) {
+                //if the product is managing stock and the available quantity is less than quantity, we will throw exception
+                throw new Exception(
+                    sprintf(
+                        'Product %s has insufficient stock. Available: %s, request: %s',
+                        $product->get_title(),
+                        $product->get_stock_quantity(),
+                        $order_item['quantity']
+                    )
+                );
+            }
+            $order->add_product(
+                $product,
+                $order_item['quantity'],
+                array(
+                    'variation' => $order_item['variation'],
+                    'totals'    => array(
+                        'subtotal'     => $order_item['line_subtotal'],
+                        'subtotal_tax' => $order_item['line_subtotal_tax'],
+                        'total'        => $order_item['line_total'],
+                        'tax'          => $order_item['line_tax'],
+                        'tax_data'     => $order_item['line_tax_data']
+                    )
+                )
+            );
+        }
+
+        //set the shipping address
+        $zip_shipping_details = $WC_Session->get('zip_shipping_details');
+        $order->set_address(
+            array(
+                'first_name' => $zip_shipping_details['zip_shipping_first_name'],
+                'last_name' => $zip_shipping_details['zip_shipping_last_name'],
+                'company' => $zip_shipping_details['zip_shipping_company'],
+                'email' => $zip_shipping_details['zip_shipping_email'],
+                'phone' => $zip_shipping_details['zip_shipping_phone'],
+                'address_1' => $zip_shipping_details['zip_shipping_address_1'],
+                'address_2' => $zip_shipping_details['zip_shipping_address_2'],
+                'city' => $zip_shipping_details['zip_shipping_city'],
+                'state' => $zip_shipping_details['zip_shipping_state'],
+                'postcode' => $zip_shipping_details['zip_shipping_postcode'],
+                'country' => $zip_shipping_details['zip_shipping_country']
+            ),
+            'shipping'
+        );
+
+        //set the billing address
+        $zip_billing_details = $WC_Session->get('zip_billing_details');
+        $order->set_address(
+            array(
+                'first_name' => $zip_billing_details['zip_billing_first_name'],
+                'last_name' => $zip_billing_details['zip_billing_last_name'],
+                'company' => $zip_billing_details['zip_billing_company'],
+                'email' => $zip_billing_details['zip_billing_email'],
+                'phone' => $zip_billing_details['zip_billing_phone'],
+                'address_1' => $zip_billing_details['zip_billing_address_1'],
+                'address_2' => $zip_billing_details['zip_billing_address_2'],
+                'city' => $zip_billing_details['zip_billing_city'],
+                'state' => $zip_billing_details['zip_billing_state'],
+                'postcode' => $zip_billing_details['zip_billing_postcode'],
+                'country' => $zip_billing_details['zip_billing_country']
+            ),
+            'billing'
+        );
+
+        //set the shipping rates
+        $shipping_rates = self::_get_shipping_rates($WC_Session);
+        foreach ($WC_Session->get('chosen_shipping_methods', array()) as $chosen_shipping_method) {
+            $order->add_shipping($shipping_rates[$chosen_shipping_method]);
+        }
+
+        $order->set_payment_method($this->WC_Zipmoney_Payment_Gateway);
+
+        $order->calculate_totals();
+
+        //set the coupon
+        $applied_coupons = $WC_Session->get('applied_coupons', array());
+        $coupon_discount_amounts = $WC_Session->get('coupon_discount_amounts', array());
+        $coupon_discount_tax_amounts = $WC_Session->get('coupon_discount_tax_amounts', array());
+
+        foreach ($applied_coupons as $coupon) {
+            $order->add_coupon($coupon, $coupon_discount_amounts[$coupon], $coupon_discount_tax_amounts[$coupon]);
+        }
+
+        return $order;
+    }
+
+    /**
+     * @param WC_Session $WC_Session
+     * @return array
+     */
+    private function _get_shipping_rates(WC_Session $WC_Session)
+    {
+        $shipping_rates = array();
+
+        for($i = 0; $i < 100; $i++){
+            $shipping_package = $WC_Session->get('shipping_for_package_' . $i, false);
+
+            if(empty($shipping_package)){
+                return $shipping_rates;
+            }
+
+            $shipping_rates = array_merge($shipping_rates, $shipping_package['rates']);
+        }
+
+        return $shipping_rates;
+    }
+
+
+    /**
+     * Prepare the charge request
+     *
+     * @param WC_Session $WC_Session
      * @return \zipMoney\Model\CreateChargeRequest
      */
-    private function _prepare_charges_request(WC_Order $order)
+    private function _prepare_charges_request(WC_Session $WC_Session)
     {
         //get the charge order
-        $charge_order = self::_get_charge_order($order);
+        $charge_order = self::_create_charge_order($WC_Session);
 
         //get authority
         $authority = new \zipMoney\Model\Authority(
             array(
                 'type' => 'checkout_id',
-                'value' => get_post_meta($order->id, WC_Zipmoney_Payment_Gateway_Config::META_CHECKOUT_ID, true)
+                'value' => $WC_Session->get(WC_Zipmoney_Payment_Gateway_Config::META_CHECKOUT_ID)
             )
         );
+
+        $capture_charge = $this->WC_Zipmoney_Payment_Gateway->WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_CHARGE_CAPTURE);
 
         return new \zipMoney\Model\CreateChargeRequest(
             array(
                 'authority' => $authority,
-                'amount' => $order->get_total(),
-                'currency' => $order->get_order_currency(),
-                'order' => $charge_order
+                'amount' => $WC_Session->get('total'),
+                'currency' => get_woocommerce_currency(),
+                'order' => $charge_order,
+                'capture' => $capture_charge
             )
         );
     }
 
+
     /**
-     * Construct the ChargeOrder object
+     * Construct the charge order object
      *
-     * @param WC_Order $order
+     * @param WC_Session $WC_Session
      * @return \zipMoney\Model\ChargeOrder
      */
-    private function _get_charge_order(WC_Order $order)
+    private function _create_charge_order(WC_Session $WC_Session)
     {
         $order_shipping = new \zipMoney\Model\OrderShipping(
             array(
-                'address' => self::_get_shipping_address($order)
+                'address' => self::_create_shipping_address($WC_Session->get('zip_shipping_details'))
             )
         );
-
-        //get the order items exclude tax. We get the subtotal value only
-        $order_items = array();
-        foreach ($order->get_items() as $id => $item) {
-            $product = new WC_Product($item['product_id']);
-
-            $order_item_data = array(
-                'name' => $item['name'],
-                'amount' => floatval($order->get_item_subtotal($item)),
-                'reference' => $product->get_sku(),
-                'description' => $product->post->post_excerpt,
-                'quantity' => intval($item['qty']),
-                'type' => 'sku',
-                'item_uri' => $product->get_permalink(),
-                'product_code' => strval($product->get_id())
-            );
-
-            $attachment_ids = $product->get_gallery_attachment_ids();
-            if (!empty($attachment_ids)) {
-                $order_item_data['image_uri'] = wp_get_attachment_url($attachment_ids[0]);
-            }
-
-            $order_items[] = new \zipMoney\Model\OrderItem($order_item_data);
-        }
-
-        //get the total tax
-        $tax_amount = $order->get_total_tax();
-        if ($tax_amount > 0) {
-            $order_items[] = new \zipMoney\Model\OrderItem(
-                array(
-                    'name' => 'Total tax',
-                    'amount' => floatval($tax_amount),
-                    'quantity' => 1,
-                    'type' => 'tax'
-                )
-            );
-        }
-
-        //get the shipping cost
-        $shipping_amount = $order->get_total_shipping();
-        if ($shipping_amount > 0) {
-            $order_items[] = new \zipMoney\Model\OrderItem(
-                array(
-                    'name' => 'Shipping cost',
-                    'amount' => floatval($shipping_amount),
-                    'quantity' => 1,
-                    'type' => 'shipping'
-                )
-            );
-        }
-
-        //get the discount
-        $discount_amount = $order->get_total_discount();
-        if ($discount_amount > 0) {
-            $order_items[] = new \zipMoney\Model\OrderItem(
-                array(
-                    'name' => 'Discount',
-                    'amount' => floatval($discount_amount),
-                    'quantity' => 1,
-                    'type' => 'discount'
-                )
-            );
-        }
 
         return new \zipMoney\Model\ChargeOrder(
             array(
-                'reference' => strval($order->id),
                 'shipping' => $order_shipping,
-                'items' => $order_items
+                'items' => self::_get_order_items($WC_Session)
             )
         );
-
-
     }
 }

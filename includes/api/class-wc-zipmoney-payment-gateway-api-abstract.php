@@ -6,36 +6,24 @@ class WC_Zipmoney_Payment_Gateway_API_Abstract {
     public function __construct(WC_Zipmoney_Payment_Gateway $WC_Zipmoney_Payment_Gateway)
     {
         $this->WC_Zipmoney_Payment_Gateway = $WC_Zipmoney_Payment_Gateway;
+
+        //set the environment
+        $is_sandbox = $this->WC_Zipmoney_Payment_Gateway->WC_Zipmoney_Payment_Gateway_Config->get_bool_config_by_key(WC_Zipmoney_Payment_Gateway_Config::CONFIG_SANDBOX);
+        if($is_sandbox == true){
+            zipMoney\Configuration::getDefaultConfiguration()->setEnvironment('sandbox');
+        } else {
+            zipMoney\Configuration::getDefaultConfiguration()->setEnvironment('production');
+        }
     }
 
     /**
-     * Get the shopper object
+     * Set the api key
      *
-     * @param WC_Order $order
-     * @return \zipMoney\Model\Shopper
+     * @param $api_key
      */
-    protected function _get_shopper(WC_Order $order)
+    protected function set_api_key($api_key)
     {
-        //get the billing information into array
-        $billing_array = self::_get_address_array($order, 'billing');
-        $billing_address = self::_get_billing_address($order);
-
-        //the shopper's data
-        $data = array(
-            'first_name' => $billing_array['first_name'],
-            'last_name' => $billing_array['last_name'],
-            'phone' => $billing_array['phone'],
-            'email' => $billing_array['email'],
-            'billing_address' => $billing_address
-        );
-
-        //get teh shopper statics if it's available
-        $shopper_statistics = self::_get_shopper_statistics();
-        if(!empty($shopper_statistics)) {
-            $data['statistics'] = $shopper_statistics;
-        }
-
-        return new \zipMoney\Model\Shopper($data);
+        zipMoney\Configuration::getDefaultConfiguration()->setApiKey('Authorization', 'Bearer ' . $api_key);
     }
 
     /**
@@ -110,6 +98,122 @@ class WC_Zipmoney_Payment_Gateway_API_Abstract {
     }
 
     /**
+     * Create the order items
+     *
+     * @param WC_Session $WC_Session
+     * @return array
+     */
+    protected function _get_order_items(WC_Session $WC_Session)
+    {
+        $order_items = array();
+
+        foreach ($WC_Session->get('cart', array()) as $id => $item) {
+            $product = new WC_Product($item['product_id']);
+            $order_item_data = array(
+                'name' => $product->get_title(),
+                'amount' => floatval($item['line_subtotal']) + floatval($item['line_subtotal_tax']),
+                'reference' => $product->get_sku(),
+                'description' => $product->post->post_excerpt,
+                'quantity' => intval($item['quantity']),
+                'type' => 'sku',
+                'item_uri' => $product->get_permalink(),
+                'product_code' => strval($product->get_id())
+            );
+
+            $attachment_ids = $product->get_gallery_attachment_ids();
+            if (!empty($attachment_ids)) {
+                $order_item_data['image_uri'] = wp_get_attachment_url($attachment_ids[0]);
+            }
+
+            $order_items[] = new \zipMoney\Model\OrderItem($order_item_data);
+        }
+
+        //get the shipping cost
+        $shipping_amount = $WC_Session->get('shipping_total', 0) + $WC_Session->get('shipping_tax_total', 0);
+        if ($shipping_amount > 0) {
+            $order_items[] = new \zipMoney\Model\OrderItem(
+                array(
+                    'name' => 'Shipping cost',
+                    'amount' => floatval($shipping_amount),
+                    'quantity' => 1,
+                    'type' => 'shipping'
+                )
+            );
+        }
+
+        //get the discount
+        $discount_amount = $WC_Session->get('discount_cart', 0) + $WC_Session->get('discount_cart_tax', 0);
+        if ($discount_amount > 0) {
+            $order_items[] = new \zipMoney\Model\OrderItem(
+                array(
+                    'name' => 'Discount',
+                    'amount' => floatval($discount_amount) * -1,
+                    'quantity' => 1,
+                    'type' => 'discount'
+                )
+            );
+        }
+
+        return $order_items;
+    }
+
+
+    /**
+     * Create the billing address
+     *
+     * @param array $billing_array => array(
+     *      'zip_billing_address_1' => '',
+     *      'zip_billing_address_2' =>,
+     *      'zip_billing_city' =>,
+     *      'zip_billing_state' =>,
+     *      'zip_billing_postcode' =>,
+     *      'zip_billing_country' =>,
+     *      'zip_billing_first_name' =>,
+     *      'zip_billing_last_name' =>
+     * )
+     * @return \zipMoney\Model\Address
+     */
+    protected function _create_billing_address(array $billing_array)
+    {
+        return new \zipMoney\Model\Address(
+            array(
+                'line1' => $billing_array['zip_billing_address_1'],
+                'line2' => $billing_array['zip_billing_address_2'],
+                'city' => $billing_array['zip_billing_city'],
+                'state' => $billing_array['zip_billing_state'],
+                'postal_code' => $billing_array['zip_billing_postcode'],
+                'country' => $billing_array['zip_billing_country'],
+                'first_name' => $billing_array['zip_billing_first_name'],
+                'last_name' => $billing_array['zip_billing_last_name']
+            )
+        );
+    }
+
+    /**
+     * Create the shipping address
+     *
+     * @param array $shipping_array
+     * @return \zipMoney\Model\Address
+     */
+    protected function _create_shipping_address(array $shipping_array)
+    {
+        return new \zipMoney\Model\Address(
+            array(
+                'line1' => $shipping_array['zip_shipping_address_1'],
+                'line2' => $shipping_array['zip_shipping_address_2'],
+                'city' => $shipping_array['zip_shipping_city'],
+                'state' => $shipping_array['zip_shipping_state'],
+                'postal_code' => $shipping_array['zip_shipping_postcode'],
+                'country' => $shipping_array['zip_shipping_country'],
+                'first_name' => $shipping_array['zip_shipping_first_name'],
+                'last_name' => $shipping_array['zip_shipping_last_name']
+            )
+        );
+    }
+
+
+
+    /**
      * Get the billing info array by different build-in methods
      *
      * @param WC_Order $order
@@ -141,56 +245,6 @@ class WC_Zipmoney_Payment_Gateway_API_Abstract {
         } else {
             return false;
         }
-    }
-
-
-    /**
-     * Get the Billing address object
-     *
-     * @param WC_Order $order
-     * @return bool|\zipMoney\Model\Address
-     */
-    protected function _get_billing_address(WC_Order $order)
-    {
-        $billing_array = self::_get_address_array($order, 'billing');
-
-        return new \zipMoney\Model\Address(
-            array(
-                'line1' => $billing_array['address_1'],
-                'line2' => $billing_array['address_2'],
-                'city' => $billing_array['city'],
-                'state' => $billing_array['state'],
-                'postal_code' => $billing_array['postcode'],
-                'country' => $billing_array['country'],
-                'first_name' => $billing_array['first_name'],
-                'last_name' => $billing_array['last_name']
-            )
-        );
-    }
-
-
-    /**
-     * Get the shipping address object
-     *
-     * @param WC_Order $order
-     * @return \zipMoney\Model\Address
-     */
-    protected function _get_shipping_address(WC_Order $order)
-    {
-        $shipping_array = self::_get_address_array($order, 'shipping');
-
-        return new \zipMoney\Model\Address(
-            array(
-                'line1' => $shipping_array['address_1'],
-                'line2' => $shipping_array['address_2'],
-                'city' => $shipping_array['city'],
-                'state' => $shipping_array['state'],
-                'postal_code' => $shipping_array['postcode'],
-                'country' => $shipping_array['country'],
-                'first_name' => $shipping_array['first_name'],
-                'last_name' => $shipping_array['last_name']
-            )
-        );
     }
 
 }
