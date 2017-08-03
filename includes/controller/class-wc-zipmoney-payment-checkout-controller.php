@@ -19,7 +19,10 @@ class WC_Zip_Controller_Checkout_Controller extends WC_Zip_Controller_Abstract_C
         );
 
         if(empty($checkout_response)){
-            return array('message' => 'Can not redirect to zipMoney.');
+            return array(
+                'message' => 'Can not redirect to zipMoney.',
+                'redirect_uri' => get_site_url() . '/checkout'
+            );
         }
 
         return array(
